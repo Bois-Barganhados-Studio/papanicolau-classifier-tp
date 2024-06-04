@@ -6,7 +6,8 @@ module com.boisbarganhados {
     requires transitive javafx.swing;
     requires transitive java.desktop;
     requires transitive lombok;
-    requires transitive opencv;
+    requires transitive org.bytedeco.opencv;
+    requires transitive org.bytedeco.javacv;
 
     opens com.boisbarganhados to javafx.fxml;
     opens com.boisbarganhados.view to javafx.fxml;

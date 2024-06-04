@@ -1,7 +1,9 @@
 package com.boisbarganhados.view;
 
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.global.opencv_imgproc;
 
 import com.boisbarganhados.Utils;
 
@@ -53,12 +55,17 @@ public class ImageController {
     }
 
     @FXML
-    private void bwFilter() {
-        var image = imageView.getImage();
-        Mat mat = Utils.image2Mat(Utils.javafxImageToBufferedImage(image));
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
-        Image bwImage = Utils.bufferedImageToJavafxImage(Utils.mat2Image(mat));
-        imageView.setImage(bwImage);
+    public void bwFilter() throws Exception {
+        Image image = this.imageView.getImage();
+        var bufferedImage = Utils.javafxImageToBufferedImage(image);
+        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+            Mat mat = openCVFrameConverter.convert(java2DFrameConverter.convert(bufferedImage));
+            opencv_imgproc.cvtColor(mat, mat, opencv_imgproc.COLOR_BGR2GRAY);
+            var bwBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(mat));
+            Image bwImage = Utils.bufferedImageToJavafxImage(bwBufferedImage);
+            imageView.setImage(bwImage);
+        }
     }
 
     private void zoom(ImageView imageView, double scaleFactor) {
