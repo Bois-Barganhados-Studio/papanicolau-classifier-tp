@@ -24,7 +24,7 @@ public class ImageController {
 
     @FXML
     public void initialize() {
-        Image image = new Image("file:crop.jpg");
+        Image image = new Image("file:bogo.jpg");
         imageView.setImage(image);
         imageView.setSmooth(true);
         imageView.setCache(true);
@@ -74,7 +74,8 @@ public class ImageController {
         System.out.println(image);
         Mat mat = Utils.toMat(image);
         opencv_imgcodecs.imwrite("im.jpg", mat);
-        var histogram = Utils.hist(mat, Utils.HIST_SIZE, Utils.RANGE);
+        // 16 tons de cinza
+        var histogram = Utils.hist(mat, 16, Utils.RANGE);
         var loader = com.boisbarganhados.Main.showDialog("Histogram.fxml");
         var controller = ((HistogramController) loader.getController());
         controller.setHistogram(histogram);

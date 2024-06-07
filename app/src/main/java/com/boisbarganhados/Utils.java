@@ -8,11 +8,13 @@ import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
+import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.indexer.FloatRawIndexer;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
+import org.bytedeco.opencv.opencv_core.Moments;
 import org.opencv.core.CvType;
 import org.bytedeco.opencv.global.opencv_imgproc;
 
@@ -51,7 +53,7 @@ public final class Utils {
     public static Mat toMat(Image image) {
         int width = (int) image.getWidth();
         int height = (int) image.getHeight();
-        byte[] buffer = new byte[width * height * 4]; 
+        byte[] buffer = new byte[width * height * 4];
         PixelReader reader = image.getPixelReader();
         WritablePixelFormat<ByteBuffer> format = WritablePixelFormat.getByteBgraInstance();
         reader.getPixels(0, 0, width, height, format, buffer, 0, width * 4);
@@ -71,7 +73,6 @@ public final class Utils {
         try {
             File outputfile = new File(name);
             ImageIO.write(image, "jpg", outputfile);
-            System.out.println("Path:" + outputfile.getAbsolutePath());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -89,9 +90,75 @@ public final class Utils {
         }
         float[] histogram = new float[(int) range[1]];
         var histIndexer = ((FloatRawIndexer) hist.createIndexer());
-        for (int i = 0; i < histSize; i++) {
+        for (int i = 0; i < histSize - 1; i++) {
             histogram[i] = histIndexer.get(i);
         }
         return histogram;
+    }
+
+    // Function to calculate 2D HSV histogram with quantization of 16 values for H
+    // and 8 values for V
+    public static float[][] hsvHist(Mat mat) {
+        int hBins = 16;
+        int vBins = 8;
+        float[] hRange = { 0, 180 }; // H channel range for HSV
+        float[] vRange = { 0, 256 }; // V channel range for HSV
+        Mat hsvMat = new Mat();
+        opencv_imgproc.cvtColor(mat, hsvMat, opencv_imgproc.COLOR_BGR2HSV);
+
+        Mat hist = new Mat();
+        var images = new MatVector(hsvMat);
+        try (IntPointer channels = new IntPointer(2);
+                IntPointer histSizes = new IntPointer(2);
+                FloatPointer ranges = new FloatPointer(hRange[0], hRange[1], vRange[0], vRange[1])) {
+            channels.put(0, 0).put(1, 2); // Use H and V channels
+            histSizes.put(0, hBins).put(1, vBins);
+            opencv_imgproc.calcHist(images, channels, new Mat(), hist, histSizes, ranges, false);
+        }
+
+        float[][] histogram = new float[hBins][vBins];
+        var histIndexer = ((FloatRawIndexer) hist.createIndexer());
+        for (int h = 0; h < hBins; h++) {
+            for (int v = 0; v < vBins; v++) {
+                histogram[h][v] = histIndexer.get(h, v);
+            }
+        }
+        return histogram;
+    }
+
+    public static double[] calculateHuMoments(Mat mat) {
+        Mat grayMat = new Mat();
+        opencv_imgproc.cvtColor(mat, grayMat, opencv_imgproc.COLOR_BGR2GRAY);
+
+        Moments moments = opencv_imgproc.moments(grayMat);
+        DoublePointer huMoments = new DoublePointer(7);
+        opencv_imgproc.HuMoments(moments, huMoments);
+
+        double[] huValues = new double[7];
+        for (int i = 0; i < 7; i++) {
+            huValues[i] = huMoments.get(i);
+        }
+        return huValues;
+    }
+
+    public static double[][] calculateHuMomentsHSV(Mat mat) {
+        Mat hsvMat = new Mat();
+        opencv_imgproc.cvtColor(mat, hsvMat, opencv_imgproc.COLOR_BGR2HSV);
+
+        double[][] huMomentsHSV = new double[3][7]; // H, S, and V channels
+
+        MatVector hsvChannels = new MatVector(3);
+        org.bytedeco.opencv.global.opencv_core.split(hsvMat, hsvChannels);
+
+        for (int i = 0; i < 3; i++) {
+            Moments moments = opencv_imgproc.moments(hsvChannels.get(i));
+            DoublePointer huMoments = new DoublePointer(7);
+            opencv_imgproc.HuMoments(moments, huMoments);
+
+            for (int j = 0; j < 7; j++) {
+                huMomentsHSV[i][j] = huMoments.get(j);
+            }
+        }
+        return huMomentsHSV;
     }
 }
