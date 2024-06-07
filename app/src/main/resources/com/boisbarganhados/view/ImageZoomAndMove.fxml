@@ -15,6 +15,7 @@
                 <Button text="Zoom In" onAction="#zoomIn" />
                 <Button text="Zoom Out" onAction="#zoomOut" />
                 <Button text="BW" onAction="#bwFilter" />
+                <Button text="Histograma" onAction="#histogramChart" />
             </buttons>
         </ButtonBar>
         <ImageView fx:id="imageView" />

@@ -1,8 +1,5 @@
 package com.boisbarganhados;
 
-
-import com.boisbarganhados.view.TestSemFxml;
-
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -20,9 +17,9 @@ public class Main extends Application {
         Main.primaryStage = primaryStage;
         primaryStage.setTitle("PAI Test");
         // use TestSemFxml to test without FXML
-        TestSemFxml testSemFxml = new TestSemFxml();
-        testSemFxml.initialize(null, null);
-        Scene scene = new Scene(testSemFxml.getRootPane(), 800, 600);
+        var loader = new FXMLLoader(Main.class.getResource("view/ImageZoomAndMove.fxml"));
+        Parent root = loader.load();
+        Scene scene = new Scene(root, 800, 600);
         applyJMetro(scene);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         primaryStage.setScene(scene);
@@ -34,8 +31,19 @@ public class Main extends Application {
         Parent root = loader.load();
         Scene scene = new Scene(root, 800, 600);
         scene.getStylesheets().add(Main.class.getResource("styles.css").toExternalForm());
-        // applyJMetro(scene);
+        applyJMetro(scene);
         primaryStage.setScene(scene);
+    }
+
+    public static FXMLLoader showDialog(String fxml) throws Exception {
+        FXMLLoader loader = new FXMLLoader(Main.class.getResource("view/" + fxml));
+        Parent root = loader.load();
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(Main.class.getResource("styles.css").toExternalForm());
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        stage.show();
+        return loader;
     }
 
     private static void applyJMetro(Scene scene) {
