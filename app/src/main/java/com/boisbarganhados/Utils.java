@@ -2,23 +2,29 @@ package com.boisbarganhados;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.io.File;
+import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
 import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.IntPointer;
-import org.bytedeco.javacv.Java2DFrameConverter;
-import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.bytedeco.javacpp.indexer.FloatRawIndexer;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
+import org.opencv.core.CvType;
 import org.bytedeco.opencv.global.opencv_imgproc;
-import org.bytedeco.opencv.opencv_imgproc.*;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritablePixelFormat;
 
-public class Utils {
+public final class Utils {
+
+    public static int HIST_SIZE = 256;
+    public static float[] RANGE = new float[] { 0.0f, 255.0f };
 
     public static Mat image2Mat(BufferedImage image) {
         byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
@@ -27,15 +33,31 @@ public class Utils {
         return mat;
     }
 
-    public static BufferedImage javafxImageToBufferedImage(Image javafxImage) throws IllegalArgumentException {
-        if (javafxImage == null) {
-            throw new IllegalArgumentException("javafxImage is null");
+    public BufferedImage matToBufferedImage(Mat frame) {
+        int type = 0;
+        if (frame.channels() == 1) {
+            type = BufferedImage.TYPE_BYTE_GRAY;
+        } else if (frame.channels() == 3) {
+            type = BufferedImage.TYPE_3BYTE_BGR;
         }
-        int width = (int) javafxImage.getWidth();
-        int height = (int) javafxImage.getHeight();
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        SwingFXUtils.fromFXImage(javafxImage, bufferedImage);
-        return bufferedImage;
+        BufferedImage image = new BufferedImage(frame.arrayWidth(), frame.arrayHeight(), type);
+        WritableRaster raster = image.getRaster();
+        DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
+        byte[] data = dataBuffer.getData();
+        frame.data().get(data);
+        return image;
+    }
+
+    public static Mat toMat(Image image) {
+        int width = (int) image.getWidth();
+        int height = (int) image.getHeight();
+        byte[] buffer = new byte[width * height * 4]; 
+        PixelReader reader = image.getPixelReader();
+        WritablePixelFormat<ByteBuffer> format = WritablePixelFormat.getByteBgraInstance();
+        reader.getPixels(0, 0, width, height, format, buffer, 0, width * 4);
+        Mat mat = new Mat(height, width, CvType.CV_8UC4);
+        mat.ptr(0).put(buffer);
+        return mat;
     }
 
     public static Image bufferedImageToJavafxImage(BufferedImage bufferedImage) throws IllegalArgumentException {
@@ -43,17 +65,6 @@ public class Utils {
             throw new IllegalArgumentException("bufferedImage is null");
         }
         return SwingFXUtils.toFXImage(bufferedImage, null);
-    }
-
-    public static BufferedImage mat2Image(Mat mat) {
-        int width = mat.cols();
-        int height = mat.rows();
-        int channels = mat.channels();
-        byte[] data = new byte[width * height * channels];
-        mat.data().get(data);
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        image.getRaster().setDataElements(0, 0, width, height, data);
-        return image;
     }
 
     public static void saveImage(BufferedImage image, String name) {
@@ -66,70 +77,21 @@ public class Utils {
         }
     }
 
-    public static int[] calculateHistogram(Image image) {
-        // Convert JavaFX Image to BufferedImage
-        BufferedImage bufferedImage = Utils.javafxImageToBufferedImage(image);
-
-        // Convert BufferedImage to OpenCV Mat using JavaCV
-        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
-                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
-            Mat mat = openCVFrameConverter.convert(java2DFrameConverter.convert(bufferedImage));
-
-            // Convert the image to grayscale
-            Mat grayMat = new Mat();
-            opencv_imgproc.cvtColor(mat, grayMat, opencv_imgproc.COLOR_BGR2GRAY);
-
-            // Apply binary threshold to get a binary image
-            Mat binaryMat = new Mat();
-            opencv_imgproc.threshold(grayMat, binaryMat, 128, 255, opencv_imgproc.THRESH_BINARY);
-
-            Mat hist = new Mat();
-            int histSize = 256; // Number of bins
-            float[] range = { 0, 256 }; // Range of values
-
-            // Prepare the required data structures
-            MatVector images = new MatVector(binaryMat);
-            try (IntPointer channels = new IntPointer().put(0);
-                    IntPointer histSizes = new IntPointer(1).put(histSize);
-                    FloatPointer ranges = new FloatPointer(range)) {
-                // Correct calcHist method call
-                opencv_imgproc.calcHist(images, channels, new Mat(), hist, histSizes, ranges);
-            }
-
-            // Convert histogram to int array
-            int[] histogram = new int[histSize];
-            for (int i = 0; i < histSize; i++) {
-                histogram[i] = (int) hist.ptr(i).get();
-            }
-
-            return histogram;
-        }
-    }
-
-    public static int[] hist(Mat binaryMat) {
+    public static float[] hist(Mat mat, int histSize, float[] range) {
         Mat hist = new Mat();
-        int histSize = 256; // Number of bins
-        float[] range = { 0, 256 }; // Range of values
-
-        // Prepare the required data structures
-        MatVector images = new MatVector(binaryMat);
-        try (IntPointer channels = new IntPointer(1).put(0);
-                IntPointer histSizes = new IntPointer(1).put(histSize);
+        var images = new MatVector(mat);
+        try (IntPointer channels = new IntPointer(1);
+                IntPointer histSizes = new IntPointer(1);
                 FloatPointer ranges = new FloatPointer(range)) {
-            // Correct calcHist method call
+            channels.put(0, 0);
+            histSizes.put(0, histSize);
             opencv_imgproc.calcHist(images, channels, new Mat(), hist, histSizes, ranges, false);
         }
-
-        // Convert histogram to int array
-        int[] histogram = new int[histSize];
+        float[] histogram = new float[(int) range[1]];
+        var histIndexer = ((FloatRawIndexer) hist.createIndexer());
         for (int i = 0; i < histSize; i++) {
-            histogram[i] = hist.ptr(i).getUnsigned();
+            histogram[i] = histIndexer.get(i);
         }
-
-        for (int i = 0; i < histSize; i++) {
-            System.out.println(histogram[i]);
-        }
-
         return histogram;
     }
 }
