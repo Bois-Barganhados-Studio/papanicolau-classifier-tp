@@ -5,6 +5,8 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -160,5 +162,55 @@ public final class Utils {
             }
         }
         return huMomentsHSV;
+    }
+
+     public static Map<Integer, int[][]> calculateCoOccurrenceMatrices(Mat mat, int[] distances) {
+        // Convert image to grayscale
+        Mat grayMat = new Mat();
+        opencv_imgproc.cvtColor(mat, grayMat, opencv_imgproc.COLOR_BGR2GRAY);
+
+        // Quantize to 16 gray levels
+        Mat quantizedMat = new Mat(grayMat.size(), grayMat.type());
+        grayMat.convertTo(quantizedMat, CvType.CV_8U, 15.0 / 255.0, 0);
+
+        Map<Integer, int[][]> coOccurrenceMatrices = new HashMap<>();
+
+        for (int distance : distances) {
+            int[][] matrix = new int[16][16];
+
+            for (int y = 0; y < quantizedMat.rows(); y++) {
+                for (int x = 0; x < quantizedMat.cols(); x++) {
+                    int pixelValue = (int) quantizedMat.ptr(y, x).get() & 0xFF;
+
+                    // Horizontal co-occurrence
+                    if (x + distance < quantizedMat.cols()) {
+                        int neighborValue = (int) quantizedMat.ptr(y, x + distance).get() & 0xFF;
+                        matrix[pixelValue][neighborValue]++;
+                    }
+
+                    // Vertical co-occurrence
+                    if (y + distance < quantizedMat.rows()) {
+                        int neighborValue = (int) quantizedMat.ptr(y + distance, x).get() & 0xFF;
+                        matrix[pixelValue][neighborValue]++;
+                    }
+
+                    // Diagonal co-occurrence (down-right)
+                    if (x + distance < quantizedMat.cols() && y + distance < quantizedMat.rows()) {
+                        int neighborValue = (int) quantizedMat.ptr(y + distance, x + distance).get() & 0xFF;
+                        matrix[pixelValue][neighborValue]++;
+                    }
+
+                    // Anti-diagonal co-occurrence (up-right)
+                    if (x + distance < quantizedMat.cols() && y - distance >= 0) {
+                        int neighborValue = (int) quantizedMat.ptr(y - distance, x + distance).get() & 0xFF;
+                        matrix[pixelValue][neighborValue]++;
+                    }
+                }
+            }
+
+            coOccurrenceMatrices.put(distance, matrix);
+        }
+
+        return coOccurrenceMatrices;
     }
 }
