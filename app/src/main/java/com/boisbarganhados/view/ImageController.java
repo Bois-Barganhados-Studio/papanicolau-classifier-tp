@@ -2,9 +2,9 @@ package com.boisbarganhados.view;
 
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
-import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.global.opencv_imgproc;
+import org.bytedeco.opencv.opencv_core.Mat;
 
 import com.boisbarganhados.Utils;
 
@@ -57,8 +57,8 @@ public class ImageController {
 
     @FXML
     public void bwFilter() throws Exception {
-        Image image = this.imageView.getImage();
-        Mat mat = Utils.toMat(image);
+        var image = this.imageView.getImage();
+        var mat = Utils.toMat(image);
         opencv_imgproc.cvtColor(mat, mat, opencv_imgproc.COLOR_BGR2GRAY);
         try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
                 OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
@@ -70,16 +70,20 @@ public class ImageController {
 
     @FXML
     public void histogramChart() throws Exception {
-        Image image = this.imageView.getImage();
-        System.out.println(image);
-        Mat mat = Utils.toMat(image);
-        opencv_imgcodecs.imwrite("im.jpg", mat);
+        var image = this.imageView.getImage();
+        var mat = Utils.toMat(image);
+        var grayMat = new Mat();
+        opencv_imgproc.cvtColor(mat, grayMat, opencv_imgproc.COLOR_BGR2GRAY);
+        opencv_imgcodecs.imwrite("im.jpg", grayMat);
         // 16 tons de cinza
-        var histogram = Utils.hist(mat, 16, Utils.RANGE);
+        var histogram = Utils.hist(grayMat, 16, new float[] { 0, 256 });
+        var hsvHistogram = Utils.hsvHist(mat);
         var loader = com.boisbarganhados.Main.showDialog("Histogram.fxml");
         var controller = ((HistogramController) loader.getController());
         controller.setHistogram(histogram);
+        controller.setHsvHistogram(hsvHistogram);
         controller.start();
+        controller.startHsv();
     }
 
     private void zoom(ImageView imageView, double scaleFactor) {

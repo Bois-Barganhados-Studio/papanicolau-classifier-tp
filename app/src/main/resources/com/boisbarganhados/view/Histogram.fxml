@@ -10,21 +10,33 @@
 
 <?scenebuilder-stylesheet JMetroDarkTheme.css?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
+<BorderPane xmlns="http://javafx.com/javafx"
     xmlns:fx="http://javafx.com/fxml"
     fx:controller="com.boisbarganhados.view.HistogramController" styleClass="background">
-    <children>
-        <!-- Histogram chart -->
-        <BarChart fx:id="barChart" title="Histogram Chart">
-            <xAxis>
-                <CategoryAxis fx:id="xAxix" side="BOTTOM"/>
-              </xAxis>
-              <yAxis>
-                <NumberAxis fx:id="yAxix" side="LEFT"/>
-              </yAxis>
-        </BarChart>
+    <top>
         <HBox spacing="10" alignment="center">
             <Button fx:id="backButton" text="Voltar" />
         </HBox>
-    </children>
-</AnchorPane>
+    </top>
+    <center>
+        <!-- Histogram chart -->
+        <BarChart fx:id="barChart" title="Histogram Chart">
+            <xAxis>
+                <CategoryAxis fx:id="xAxix" side="BOTTOM" />
+            </xAxis>
+            <yAxis>
+                <NumberAxis fx:id="yAxix" side="LEFT" />
+            </yAxis>
+        </BarChart>
+    </center>
+    <bottom>
+        <LineChart fx:id="hsvChart" title="Histogram HSV Chart">
+            <xAxis>
+                <CategoryAxis fx:id="hsvXAxix" side="BOTTOM" />
+            </xAxis>
+            <yAxis>
+                <NumberAxis fx:id="hsvYAxix" side="LEFT" />
+            </yAxis>
+        </LineChart>
+    </bottom>
+</BorderPane>

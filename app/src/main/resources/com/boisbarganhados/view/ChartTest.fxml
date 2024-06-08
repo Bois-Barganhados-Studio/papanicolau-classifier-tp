@@ -6,7 +6,7 @@
 
 <?scenebuilder-stylesheet JMetroDarkTheme.css?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
+<StackPane xmlns="http://javafx.com/javafx"
     xmlns:fx="http://javafx.com/fxml"
     fx:controller="com.boisbarganhados.view.ChartController" styleClass="background">
     <children>
@@ -23,4 +23,4 @@
             <Button text="Voltar" onAction="#navigateBack" />
         </HBox>
     </children>
-</AnchorPane>
+</StackPane>
