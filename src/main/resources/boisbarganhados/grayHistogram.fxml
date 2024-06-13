@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.control.Button?>
+<!-- Import string-->
+<?import javafx.scene.chart.CategoryAxis?>
+<?import java.lang.String?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+  xmlns:fx="http://javafx.com/fxml"
+  fx:controller="boisbarganhados.GrayHistogramController"
+  >
+  <center>
+    <BarChart fx:id="barChart" title="Histogram Chart">
+      <xAxis>
+        <CategoryAxis fx:id="xAxis" side="BOTTOM" />
+      </xAxis>
+      <yAxis>
+        <NumberAxis fx:id="yAxis" side="LEFT" />
+      </yAxis>
+    </BarChart>
+  </center>
+</BorderPane>
