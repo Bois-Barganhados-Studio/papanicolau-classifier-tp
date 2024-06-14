@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?scenebuilder-stylesheet JMetroDarkTheme.css?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+    fx:controller="com.boisbarganhados.view.ImageController" styleClass="background"
+    fx:id="stackPane">
+    <children>
+        <ButtonBar StackPane.alignment="BOTTOM_CENTER">
+            <buttons>
+                <Button text="Zoom In" onAction="#zoomIn" />
+                <Button text="Zoom Out" onAction="#zoomOut" />
+                <Button text="BW" onAction="#bwFilter" />
+                <Button text="Histograma" onAction="#histogramChart" />
+            </buttons>
+        </ButtonBar>
+        <ImageView fx:id="imageView" />
+    </children>
+</StackPane>

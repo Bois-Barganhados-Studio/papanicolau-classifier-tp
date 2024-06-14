@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?scenebuilder-stylesheet JMetroDarkTheme.css?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+    fx:controller="com.boisbarganhados.view.TestController" styleClass="background">
+    <center>
+        <VBox alignment="CENTER" spacing="20">
+            <Label styleClass="item-title" text="Home" />
+            <Button fx:id="backButton" text="Back to Home" />
+        </VBox>
+    </center>
+</BorderPane>
