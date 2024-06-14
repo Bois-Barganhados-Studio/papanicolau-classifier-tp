@@ -2,32 +2,20 @@ package boisbarganhados;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-
-import javax.swing.UIManager;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
-
-import com.formdev.flatlaf.FlatDarkLaf;
 
 import atlantafx.base.theme.PrimerDark;
 
 public class App extends Application {
 
     private static Scene scene;
-    private Stage stage;
 
     @Override
     public void start(Stage stage) throws IOException {
-        this.stage = stage;
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
         FXMLLoader loader = loadFXML("primary");
         scene = new Scene(loader.load(), 800, 600);
