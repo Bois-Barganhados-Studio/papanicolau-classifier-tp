@@ -1,4 +1,4 @@
-package com.boisbarganhados;
+package boisbarganhados;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -92,7 +92,7 @@ public final class Utils {
         }
         float[] histogram = new float[(int) range[1]];
         var histIndexer = ((FloatRawIndexer) hist.createIndexer());
-        for (int i = 0; i < histSize - 1; i++) {
+        for (int i = 0; i < histSize; i++) {
             histogram[i] = histIndexer.get(i);
         }
         return histogram;

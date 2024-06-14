@@ -1,0 +1,5 @@
+# Ignore target folder
+target/
+
+# Ignore Visual Studio Code
+.vscode/
