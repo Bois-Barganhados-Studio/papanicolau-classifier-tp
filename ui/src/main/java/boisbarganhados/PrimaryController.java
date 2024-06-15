@@ -166,6 +166,57 @@ public class PrimaryController {
     }
 
     @FXML
+    private void redFilter() {
+        Image image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        var mat = Utils.toMat(image);
+        var bufferRed = Utils.colorFilter(mat, Color.RED);
+        System.out.println(bufferRed.channels());
+        org.bytedeco.opencv.global.opencv_imgcodecs.imwrite("red.jpg", bufferRed);
+        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+            var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
+            Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
+            imageView.setImage(redImage);
+        }
+    }
+
+    @FXML
+    private void greenFilter() {
+        Image image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        var mat = Utils.toMat(image);
+        var bufferRed = Utils.colorFilter(mat, Color.GREEN);
+        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+            var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
+            Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
+            imageView.setImage(redImage);
+        }
+    }
+
+    @FXML
+    private void blueFilter() {
+        Image image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        var mat = Utils.toMat(image);
+        var bufferRed = Utils.colorFilter(mat, Color.BLUE);
+        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+            var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
+            Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
+            imageView.setImage(redImage);
+        }
+    }
+        
+
+    @FXML
     private void openGrayHistogram() {
         var image = imageView.getImage();
         if (image == null) {

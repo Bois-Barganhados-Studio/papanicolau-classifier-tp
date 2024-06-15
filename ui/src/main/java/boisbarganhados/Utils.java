@@ -62,7 +62,7 @@ public final class Utils {
         WritablePixelFormat<ByteBuffer> format = WritablePixelFormat.getByteBgraInstance();
         reader.getPixels(0, 0, width, height, format, buffer, 0, width * 4);
         Mat mat = new Mat(height, width, CvType.CV_8UC4);
-        mat.ptr(0).put(buffer); 
+        mat.ptr(0).put(buffer);
         mat.convertTo(mat, CvType.CV_8UC3);
         return mat;
     }
@@ -145,7 +145,57 @@ public final class Utils {
         return huMoments;
     }
 
+    public static Mat colorFilter(Mat image, Color color) {
+        Mat filteredImage = new Mat();
+
+        // Convert image to BGR if it's not already
+        if (image.channels() == 4) {
+            cvtColor(image, image, COLOR_BGRA2BGR);
+        }
+
+        // Split the image into individual color channels
+        MatVector channels = new MatVector();
+        org.bytedeco.opencv.global.opencv_core.split(image, channels);
+
+        // Ensure the image has 3 channels (BGR)
+        if (channels.size() != 3) {
+            throw new IllegalArgumentException("Expected BGR image (3 channels)");
+        }
+
+        // Initialize empty Mats for merging channels
+        MatVector mergeChannels = new MatVector(3);
+
+        switch (color) {
+            case RED:
+                mergeChannels.put(0, channels.get(0));
+                mergeChannels.put(1, channels.get(1));
+                mergeChannels.put(2, Mat.zeros(channels.get(1).size(), channels.get(1).type()).asMat());
+                break;
+            case GREEN:
+                mergeChannels.put(0, channels.get(0));
+                mergeChannels.put(1, Mat.zeros(channels.get(1).size(), channels.get(1).type()).asMat());
+                mergeChannels.put(2, channels.get(2));
+                break;
+            case BLUE:
+                mergeChannels.put(0, Mat.zeros(channels.get(0).size(), channels.get(0).type()).asMat());
+                mergeChannels.put(1, channels.get(1));
+                mergeChannels.put(2, channels.get(2));
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid color");
+            
+        }
+
+        // Merge the channels back into a single image
+        org.bytedeco.opencv.global.opencv_core.merge(mergeChannels, filteredImage);
+
+        return filteredImage;
+    }
+
     public static double[] getAllHuMoments(Mat image) {
+        if (image.channels() == 4) {
+            cvtColor(image, image, COLOR_BGRA2BGR);
+        }
         Mat grayImage = new Mat();
         Mat hsvImage = new Mat();
         cvtColor(image, grayImage, COLOR_BGRA2GRAY);

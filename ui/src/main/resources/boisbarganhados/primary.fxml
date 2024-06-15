@@ -42,6 +42,21 @@
                   <FontIcon iconLiteral="mdal-filter_b_and_w" iconSize="24" />
                </graphic>
             </Button>
+            <Button onAction="#redFilter">
+               <graphic>
+                  <FontIcon iconLiteral="mdal-filter_none" iconSize="24" />
+               </graphic>
+            </Button>
+            <Button onAction="#greenFilter">
+               <graphic>
+                  <FontIcon iconLiteral="mdal-filter_2" iconSize="24" />
+               </graphic>
+            </Button>
+            <Button onAction="#blueFilter">
+               <graphic>
+                  <FontIcon iconLiteral="mdal-filter_3" iconSize="24" />
+               </graphic>
+            </Button>
             <Button onAction="#openGrayHistogram">
                <graphic>
                   <FontIcon iconLiteral="mdal-insert_chart_outlined" iconSize="24" />
