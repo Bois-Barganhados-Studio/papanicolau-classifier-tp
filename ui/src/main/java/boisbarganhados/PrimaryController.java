@@ -212,14 +212,26 @@ public class PrimaryController {
             return;
         }
         var mat = Utils.toMat(image);
-        var huMoments = Utils.calculateHuMomentsHSV(mat);
+        var huMoments = Utils.getAllHuMoments(mat);
         try {
             Text text = new Text();
-            for (int i = 0; i < huMoments.length; i++) {
-                for (int j = 0; j < huMoments[i].length; j++) {
-                    text.setText(text.getText() + huMoments[i][j] + ", ");
-                }
-                text.setText(text.getText() + "\n");
+            text.setText("Hu Moments\n\n");
+
+            text.setText(text.getText() + "Gray: \n");
+            for (int i = 0; i < 7; i++) {
+                text.setText(text.getText() + "F" + (i + 1) + ": " + huMoments[i] + "\n");
+            }
+            text.setText(text.getText() + "Canal H: \n");
+            for (int i = 7; i < 14; i++) {
+                text.setText(text.getText() + "F" + ((i - 6) + 1) + ": " + huMoments[i] + "\n");
+            }
+            text.setText(text.getText() + "Canal S: \n");
+            for (int i = 14; i < 21; i++) {
+                text.setText(text.getText() + "F" + ((i - 13) + 1) + ": " + huMoments[i] + "\n");
+            }
+            text.setText(text.getText() + "Canal V: \n");
+            for (int i = 21; i < 28; i++) {
+                text.setText(text.getText() + "F" + ((i - 21) + 1) + ": " + huMoments[i] + "\n");
             }
             showModal(text);
         } catch (Exception e) {

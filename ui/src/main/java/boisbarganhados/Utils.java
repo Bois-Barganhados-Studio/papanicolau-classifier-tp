@@ -10,7 +10,6 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.indexer.FloatRawIndexer;
@@ -18,12 +17,15 @@ import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_core.Moments;
 import org.opencv.core.CvType;
+import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.global.opencv_imgproc;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritablePixelFormat;
+
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public final class Utils {
 
@@ -60,7 +62,8 @@ public final class Utils {
         WritablePixelFormat<ByteBuffer> format = WritablePixelFormat.getByteBgraInstance();
         reader.getPixels(0, 0, width, height, format, buffer, 0, width * 4);
         Mat mat = new Mat(height, width, CvType.CV_8UC4);
-        mat.ptr(0).put(buffer);
+        mat.ptr(0).put(buffer); 
+        mat.convertTo(mat, CvType.CV_8UC3);
         return mat;
     }
 
@@ -129,42 +132,38 @@ public final class Utils {
     }
 
     public static double[] calculateHuMoments(Mat mat) {
-        Mat grayMat = new Mat();
-        opencv_imgproc.cvtColor(mat, grayMat, opencv_imgproc.COLOR_BGR2GRAY);
-
-        Moments moments = opencv_imgproc.moments(grayMat);
-        DoublePointer huMoments = new DoublePointer(7);
+        Mat binMat = new Mat();
+        opencv_imgproc.threshold(mat, binMat, 0, 255, opencv_imgproc.THRESH_BINARY);
+        Moments moments = opencv_imgproc.moments(binMat);
+        double[] huMoments = new double[7];
         opencv_imgproc.HuMoments(moments, huMoments);
-
-        double[] huValues = new double[7];
-        for (int i = 0; i < 7; i++) {
-            huValues[i] = huMoments.get(i);
+        for (int j = 0; j < 7; j++) {
+            double a = -1 * Math.signum(huMoments[j]);
+            double b = (huMoments[j] == 0) ? 0 : Math.log10(Math.abs(huMoments[j]));
+            huMoments[j] = a * b;
         }
-        return huValues;
+        return huMoments;
     }
 
-    public static double[][] calculateHuMomentsHSV(Mat mat) {
-        Mat hsvMat = new Mat();
-        opencv_imgproc.cvtColor(mat, hsvMat, opencv_imgproc.COLOR_BGR2HSV);
-
-        double[][] huMomentsHSV = new double[3][7]; // H, S, and V channels
-
-        MatVector hsvChannels = new MatVector(3);
-        org.bytedeco.opencv.global.opencv_core.split(hsvMat, hsvChannels);
-
-        for (int i = 0; i < 3; i++) {
-            Moments moments = opencv_imgproc.moments(hsvChannels.get(i));
-            DoublePointer huMoments = new DoublePointer(7);
-            opencv_imgproc.HuMoments(moments, huMoments);
-
-            for (int j = 0; j < 7; j++) {
-                huMomentsHSV[i][j] = huMoments.get(j);
-            }
-        }
-        return huMomentsHSV;
+    public static double[] getAllHuMoments(Mat image) {
+        Mat grayImage = new Mat();
+        Mat hsvImage = new Mat();
+        cvtColor(image, grayImage, COLOR_BGRA2GRAY);
+        cvtColor(image, hsvImage, COLOR_BGR2HSV);
+        MatVector channels = new MatVector(3);
+        org.bytedeco.opencv.global.opencv_core.split(hsvImage, channels);
+        Mat hChannel = channels.get()[0];
+        Mat sChannel = channels.get()[1];
+        Mat vChannel = channels.get()[2];
+        double[] hu = new double[28]; // 7 moments * 4 channels
+        System.arraycopy(calculateHuMoments(grayImage), 0, hu, 0, 7);
+        System.arraycopy(calculateHuMoments(hChannel), 0, hu, 7, 7);
+        System.arraycopy(calculateHuMoments(sChannel), 0, hu, 14, 7);
+        System.arraycopy(calculateHuMoments(vChannel), 0, hu, 21, 7);
+        return hu;
     }
 
-     public static Map<Integer, int[][]> calculateCoOccurrenceMatrices(Mat mat, int[] distances) {
+    public static Map<Integer, int[][]> calculateCoOccurrenceMatrices(Mat mat, int[] distances) {
         // Convert image to grayscale
         Mat grayMat = new Mat();
         opencv_imgproc.cvtColor(mat, grayMat, opencv_imgproc.COLOR_BGR2GRAY);
