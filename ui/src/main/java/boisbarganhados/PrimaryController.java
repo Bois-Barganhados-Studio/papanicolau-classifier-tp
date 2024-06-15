@@ -174,7 +174,6 @@ public class PrimaryController {
         var mat = Utils.toMat(image);
         var bufferRed = Utils.colorFilter(mat, Color.RED);
         System.out.println(bufferRed.channels());
-        org.bytedeco.opencv.global.opencv_imgcodecs.imwrite("red.jpg", bufferRed);
         try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
                 OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
             var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
@@ -191,6 +190,40 @@ public class PrimaryController {
         }
         var mat = Utils.toMat(image);
         var bufferRed = Utils.colorFilter(mat, Color.GREEN);
+        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+            var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
+            Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
+            imageView.setImage(redImage);
+        }
+    }
+
+    @FXML
+    private void binFilter() {
+        Image image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        var mat = Utils.toMat(image);
+        var buffer = Utils.threshold(mat, 0);
+        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+            var bufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(buffer));
+            Image redImage = Utils.bufferedImageToJavafxImage(bufferedImage);
+            imageView.setImage(redImage);
+        }
+    }
+
+    @FXML
+    private void constrastFilter() {
+        Image image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        var mat = Utils.toMat(image);
+        var alpha = 1.5;
+        var beta = 0;
+        var bufferRed = Utils.contrast(mat, alpha, beta);
         try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
                 OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
             var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));

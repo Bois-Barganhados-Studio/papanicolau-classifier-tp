@@ -17,7 +17,6 @@ import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_core.Moments;
 import org.opencv.core.CvType;
-import org.bytedeco.opencv.global.opencv_imgcodecs;
 import org.bytedeco.opencv.global.opencv_imgproc;
 
 import javafx.embed.swing.SwingFXUtils;
@@ -145,26 +144,29 @@ public final class Utils {
         return huMoments;
     }
 
+    public static Mat threshold(Mat image, int threshold) {
+        Mat thresholded = new Mat();
+        opencv_imgproc.threshold(image, thresholded, threshold, 255, opencv_imgproc.THRESH_BINARY);
+        return thresholded;
+    }
+
+    public static Mat contrast(Mat image, double alpha, int beta) {
+        Mat contrasted = new Mat();
+        image.convertTo(contrasted, -1, alpha, beta);
+        return contrasted;
+    }
+
     public static Mat colorFilter(Mat image, Color color) {
         Mat filteredImage = new Mat();
-
-        // Convert image to BGR if it's not already
         if (image.channels() == 4) {
             cvtColor(image, image, COLOR_BGRA2BGR);
         }
-
-        // Split the image into individual color channels
         MatVector channels = new MatVector();
         org.bytedeco.opencv.global.opencv_core.split(image, channels);
-
-        // Ensure the image has 3 channels (BGR)
         if (channels.size() != 3) {
             throw new IllegalArgumentException("Expected BGR image (3 channels)");
         }
-
-        // Initialize empty Mats for merging channels
         MatVector mergeChannels = new MatVector(3);
-
         switch (color) {
             case RED:
                 mergeChannels.put(0, channels.get(0));
@@ -185,10 +187,7 @@ public final class Utils {
                 throw new IllegalArgumentException("Invalid color");
             
         }
-
-        // Merge the channels back into a single image
         org.bytedeco.opencv.global.opencv_core.merge(mergeChannels, filteredImage);
-
         return filteredImage;
     }
 
