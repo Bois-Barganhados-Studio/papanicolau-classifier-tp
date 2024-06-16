@@ -79,14 +79,14 @@
             <Separator orientation="HORIZONTAL" />
             <HBox spacing="4">
                <VBox spacing="4" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
-                  <Button fx:id="lowPassButton" text="Passa Alta">
-                     <graphic>
-                        <FontIcon iconLiteral="mdsmz-minus" iconSize="24" />
-                     </graphic>
-                  </Button>
-                  <Button fx:id="highPassButton" text="Passa Baixa">
+                  <Button fx:id="lowPassButton" onAction="#highPassFilter" text="Passa Alta">
                      <graphic>
                         <FontIcon iconLiteral="mdsmz-plus" iconSize="24" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="highPassButton" onAction="#lowPassFilter" text="Passa Baixa">
+                     <graphic>
+                        <FontIcon iconLiteral="mdsmz-minus" iconSize="24" />
                      </graphic>
                   </Button>
                </VBox>
@@ -117,6 +117,16 @@
             <Button onAction="#openHuMoments" text="Momentos de Hu">
                <graphic>
                   <FontIcon iconLiteral="mdoal-description" iconSize="24" />
+               </graphic>
+            </Button>
+            <Button text="Descritores de Haralick">
+               <graphic>
+                  <FontIcon iconLiteral="mdoal-format_list_numbered" iconSize="24" />
+               </graphic>
+            </Button>
+            <Button text="Classificar imagem">
+               <graphic>
+                  <FontIcon iconLiteral="mdi2i-image-search" iconSize="24" />
                </graphic>
             </Button>
          </ToolBar>
@@ -169,6 +179,22 @@
                      <MenuItem fx:id="saveButton" text="Salvar" onAction="#saveImage" disable="true">
                         <graphic>
                            <FontIcon iconLiteral="mdomz-save" iconSize="36" />
+                        </graphic>
+                     </MenuItem>
+                  </items>
+               </MenuButton>
+               <MenuButton text="Mais">
+                  <items>
+                     <MenuItem text="Repositório do código" onAction="#openRepo">
+                        <graphic>
+                           <FontIcon iconLiteral="mdoal-code" iconSize="36" />
+                        </graphic>
+                     </MenuItem>
+                  </items>
+                  <items>
+                     <MenuItem text="Sobre" onAction="#openAboutDialog">
+                        <graphic>
+                           <FontIcon iconLiteral="mdi2i-information" iconSize="36" />
                         </graphic>
                      </MenuItem>
                   </items>

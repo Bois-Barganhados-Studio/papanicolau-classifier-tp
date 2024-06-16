@@ -3,6 +3,7 @@ package boisbarganhados;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
@@ -21,13 +22,17 @@ public class App extends Application {
         scene = new Scene(loader.load(), 800, 600);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         scene.setFill(Color.TRANSPARENT);
-        
+
         PrimaryController controller = loader.getController();
         controller.setStage(stage);
 
         stage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
         stage.setScene(scene);
+        stage.setTitle("Papanicolau Image Viewer and Classifier");
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("logo.png")));
+        stage.setResizable(true);
         stage.show();
+        controller.startKeyBindings();
     }
 
     static void setRoot(String fxml) throws IOException {

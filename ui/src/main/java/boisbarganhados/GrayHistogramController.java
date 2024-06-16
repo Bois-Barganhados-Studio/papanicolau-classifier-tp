@@ -21,17 +21,17 @@ public class GrayHistogramController {
     XYChart.Series<String, Number> dataSeries = new XYChart.Series<>();
     for (int i = 0; i < histogram.length; i++) {
       if (histogram[i] > 0)
-        dataSeries.getData().add(new XYChart.Data<>("Cinza " + i, histogram[i]));
+        dataSeries.getData().add(new XYChart.Data<>(" " + i, histogram[i]));
     }
 
     // Add data to chart
     barChart.getData().add(dataSeries);
 
     // Set chart title
-    barChart.setTitle("Histogram");
+    barChart.setTitle("Histograma de tons de cinza");
 
     // Set axis labels
-    barChart.getXAxis().setLabel("Intensity");
-    barChart.getYAxis().setLabel("Frequency");
+    barChart.getXAxis().setLabel("Tom de cinza");
+    barChart.getYAxis().setLabel("Ocorrências");
   }
 }

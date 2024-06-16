@@ -12,7 +12,7 @@
     xmlns:fx="http://javafx.com/fxml"
     fx:controller="boisbarganhados.HSVHistogramController" >
     <center>
-        <LineChart fx:id="hsvChart" title="Histogram HSV Chart">
+        <LineChart fx:id="hsvChart" title="Histogram HSV Chart" minHeight="300" minWidth="300">
             <xAxis>
                 <CategoryAxis fx:id="xAxis" side="BOTTOM" />
             </xAxis>

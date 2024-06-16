@@ -4,37 +4,51 @@ import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.kordamp.ikonli.javafx.FontIcon;
-
+import atlantafx.base.controls.Card;
 import atlantafx.base.controls.ModalPane;
 import atlantafx.base.controls.ProgressSliderSkin;
+import atlantafx.base.controls.Tile;
 import atlantafx.base.theme.Styles;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import lombok.Data;
 
 import java.io.File;
 import java.util.Stack;
-
 import javax.imageio.ImageIO;
 
 @Data
@@ -42,6 +56,7 @@ public class PrimaryController {
     private Stage stage;
     private double xOffset = 0;
     private double yOffset = 0;
+    private ProgressIndicator indicator;
 
     private boolean isMaximized = false;
     private double lastWidth = 0;
@@ -221,6 +236,45 @@ public class PrimaryController {
     }
 
     @FXML
+    public void openRepo() {
+        try {
+            java.awt.Desktop.getDesktop()
+                    .browse(new java.net.URI("https://github.com/Bois-Barganhados-Studio/pai-tp1-papanicolau"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void openAboutDialog() {
+
+        var card1 = new Card();
+        card1.getStyleClass().add(Styles.ELEVATED_2);
+        card1.setMinWidth(300);
+        card1.setMaxWidth(300);
+        card1.setMaxHeight(300);
+
+        var header1 = new Tile(
+                "Trabalho Prático 1 - Papanicolau",
+                "Analisa e classificação de imagens de Papanicolau com técnicas de processamento de imagens.");
+        card1.setHeader(header1);
+
+        var text1 = new TextFlow(new Text("\n\n" +
+                "Desenvolvido por:\n" +
+                "  - Edmar Melandes\n" +
+                "  - Leon Junio Martins\n" +
+                "  - Felipe Aguilar Moura\n\n" +
+                "Disciplina: Processamento de Imagens\n" +
+                "Professor: Alexei Machado \n" +
+                "PUC Minas - Praça da Liberdade\n" +
+                "2024/1"));
+        text1.setMaxWidth(260);
+        card1.setBody(text1);
+
+        showModal(card1, 300, 300);
+    }
+
+    @FXML
     public void undo() {
         if (undoStack.isEmpty()) {
             return;
@@ -267,8 +321,54 @@ public class PrimaryController {
         closeButton.setGraphic(closeIcon);
 
         borderPane.setTop(closeButton);
+        BorderPane.setAlignment(closeButton, Pos.TOP_RIGHT);
         borderPane.setCenter(node);
         modalPane.show(borderPane);
+    }
+
+    private void showModal(Node node, double width, double height) {
+        BorderPane borderPane = new BorderPane();
+        borderPane.setPrefWidth(width);
+        borderPane.setPrefHeight(height);
+        borderPane.setMaxWidth(width);
+        borderPane.setMaxHeight(height);
+        borderPane.setStyle("-fx-background-color: -color-bg-default; -fx-border-radius: 4px;");
+        Button closeButton = new Button();
+        closeButton.getStyleClass().addAll(Styles.FLAT, Styles.BUTTON_ICON);
+        closeButton.setOnAction(event -> modalPane.hide());
+        FontIcon closeIcon = new FontIcon("mdoal-close");
+        closeIcon.setIconSize(24);
+        closeButton.setGraphic(closeIcon);
+        Button detachButton = new Button();
+        detachButton.getStyleClass().addAll(Styles.FLAT, Styles.BUTTON_ICON);
+        detachButton.setOnAction(event -> {
+            modalPane.hide();
+            showDialog(node);
+        });
+        FontIcon detachIcon = new FontIcon("mdi2d-dock-window");
+        detachIcon.setIconSize(24);
+        detachButton.setGraphic(detachIcon);
+        Tooltip tooltip = new Tooltip("Abrir em nova janela");
+        tooltip.setHideDelay(Duration.seconds(1));
+        detachButton.setTooltip(tooltip);
+        HBox buttonBox = new HBox();
+        buttonBox.getChildren().addAll(detachButton, closeButton);
+        buttonBox.setSpacing(8);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        borderPane.setTop(buttonBox);
+        borderPane.setCenter(node);
+        modalPane.show(borderPane);
+    }
+
+    private void showDialog(Node node) {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.getDialogPane().setContent(node);
+        dialog.setResizable(false);
+        dialog.initStyle(StageStyle.UNIFIED);
+        dialog.initModality(Modality.WINDOW_MODAL);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.getDialogPane().lookupButton(ButtonType.CLOSE).setVisible(false);
+        dialog.show();
     }
 
     @FXML
@@ -409,11 +509,45 @@ public class PrimaryController {
             }
         });
 
+        var contextMenu = new javafx.scene.control.ContextMenu();
+        var zoomInMenuItem = new MenuItem("Zoom In");
+        zoomInMenuItem.setOnAction(event -> zoomImage(1.1));
+        zoomInMenuItem.setGraphic(new FontIcon("mdi2m-magnify-plus"));
+        var zoomOutMenuItem = new MenuItem("Zoom Out");
+        zoomOutMenuItem.setOnAction(event -> zoomImage(0.9));
+        zoomOutMenuItem.setGraphic(new FontIcon("mdi2m-magnify-minus"));
+        var undoMenuItem = new MenuItem("Desfazer");
+        undoMenuItem.setOnAction(event -> undo());
+        undoMenuItem.setGraphic(new FontIcon("mdi2u-undo"));
+        var redoMenuItem = new MenuItem("Refazer");
+        redoMenuItem.setOnAction(event -> redo());
+        redoMenuItem.setGraphic(new FontIcon("mdi2r-redo"));
+        var save = new MenuItem("Salvar");
+        save.setOnAction(event -> saveImage());
+        save.setGraphic(new FontIcon("mdi2c-content-save"));
+        contextMenu.getItems().addAll(zoomInMenuItem, zoomOutMenuItem, new SeparatorMenuItem(), undoMenuItem,
+                redoMenuItem, new SeparatorMenuItem(), save);
+        imageView.setOnContextMenuRequested(
+                event -> contextMenu.show(imageView, event.getScreenX(), event.getScreenY()));
     }
 
     @FXML
     private void minimizeWindow() {
         stage.setIconified(true);
+    }
+
+
+    public void startKeyBindings() {
+        var scene = stage.getScene();
+        scene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (event.isControlDown() && event.getCode() == KeyCode.Z) {
+                undo();
+                event.consume();
+            } else if (event.isControlDown() && event.getCode() == KeyCode.Y) {
+                redo();
+                event.consume();
+            }
+        });
     }
 
     @FXML
@@ -449,7 +583,22 @@ public class PrimaryController {
 
     @FXML
     private void closeWindow() {
-        stage.close();
+        var pane = new BorderPane();
+        pane.setPrefWidth(220);
+        pane.setPrefHeight(160);
+        pane.setMaxWidth(220);
+        pane.setMaxHeight(160);
+        pane.setStyle("-fx-background-color: -color-bg-default");
+        var text = new Text(
+                "Você tem certeza que deseja sair do programa?\n Todas as alterações não salvas serão perdidas.");
+        var button = new Button("Sair do programa");
+        button.getStyleClass().addAll(Styles.DANGER, Styles.INTERACTIVE);
+        button.setOnAction(event -> stage.close());
+        pane.setCenter(text);
+        pane.setBottom(button);
+        BorderPane.setAlignment(button, javafx.geometry.Pos.CENTER);
+        BorderPane.setAlignment(text, javafx.geometry.Pos.CENTER);
+        showModal(pane);
     }
 
     @FXML
@@ -511,6 +660,38 @@ public class PrimaryController {
     }
 
     @FXML
+    private void highPassFilter() {
+        Image image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        var mat = Utils.toMat(image);
+        mat = Utils.applyFourierFilter(mat, fourierSpinner.getValue(), true);
+        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+            var bwBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(mat));
+            Image bwImage = Utils.bufferedImageToJavafxImage(bwBufferedImage);
+            editImage(bwImage);
+        }
+    }
+
+    @FXML
+    private void lowPassFilter() {
+        Image image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        var mat = Utils.toMat(image);
+        mat = Utils.applyFourierFilter(mat, fourierSpinner.getValue(), false);
+        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+            var bwBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(mat));
+            Image bwImage = Utils.bufferedImageToJavafxImage(bwBufferedImage);
+            editImage(bwImage);
+        }
+    }
+
+    @FXML
     private void redFilter() {
         Image image = imageView.getImage();
         if (image == null) {
@@ -518,7 +699,6 @@ public class PrimaryController {
         }
         var mat = Utils.toMat(image);
         var bufferRed = Utils.colorFilter(mat, Color.RED);
-        System.out.println(bufferRed.channels());
         try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
                 OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
             var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
@@ -605,7 +785,7 @@ public class PrimaryController {
             GrayHistogramController controller = loader.getController();
             controller.setHistogram(histogram);
             controller.start();
-            showModal(node);
+            showModal(node, 550, 500);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -625,7 +805,7 @@ public class PrimaryController {
             HSVHistogramController controller = loader.getController();
             controller.setHistogram(histogram);
             controller.start();
-            showModal(node);
+            showModal(node, 630, 500);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -640,26 +820,42 @@ public class PrimaryController {
         var mat = Utils.toMat(image);
         var huMoments = Utils.getAllHuMoments(mat);
         try {
-            Text text = new Text();
-            text.setText("Hu Moments\n\n");
-
-            text.setText(text.getText() + "Gray: \n");
+            Card card1 = new Card();
+            var textx = "Hu Moments\nMomentos invariantes de Hu para a imagem em 256 tons de cinza e para os 3 canais\r\n"
+                    + "originais do modelo HSV (4*7 características)";
+            var textFlow = new TextFlow(new Text(textx));
+            textFlow.setMinHeight(100);
+            VBox.setVgrow(textFlow, Priority.ALWAYS);
+            var vbox = new VBox(textFlow);
+            var text = "";
             for (int i = 0; i < 7; i++) {
-                text.setText(text.getText() + "F" + (i + 1) + ": " + huMoments[i] + "\n");
+                text = (text + "F" + (i + 1) + ": " + huMoments[i] + "\n");
             }
-            text.setText(text.getText() + "Canal H: \n");
+            var tp1 = new TitledPane("Cinza", new Text(text));
+            text = "";
             for (int i = 7; i < 14; i++) {
-                text.setText(text.getText() + "F" + ((i - 6) + 1) + ": " + huMoments[i] + "\n");
+                text = (text + "F" + ((i - 6) + 1) + ": " + huMoments[i] + "\n");
             }
-            text.setText(text.getText() + "Canal S: \n");
+            var tp2 = new TitledPane("Canal H", new Text(text));
+            text = "";
             for (int i = 14; i < 21; i++) {
-                text.setText(text.getText() + "F" + ((i - 13) + 1) + ": " + huMoments[i] + "\n");
+                text = (text + "F" + ((i - 13) + 1) + ": " + huMoments[i] + "\n");
             }
-            text.setText(text.getText() + "Canal V: \n");
+            var tp3 = new TitledPane("Canal S", new Text(text));
+            text = "";
             for (int i = 21; i < 28; i++) {
-                text.setText(text.getText() + "F" + ((i - 21) + 1) + ": " + huMoments[i] + "\n");
+                text = (text + "F" + ((i - 21) + 1) + ": " + huMoments[i] + "\n");
             }
-            showModal(text);
+            var tp4 = new TitledPane("Canal V", new Text(text));
+            text = "";
+            var accordion = new Accordion(tp1, tp2, tp3, tp4);
+            vbox.getChildren().add(accordion);
+            ScrollPane scrollPane = new ScrollPane(vbox);
+            scrollPane.setFitToWidth(true);
+            card1.setBody(scrollPane);
+            card1.getStyleClass().add(Styles.ELEVATED_2);
+            card1.setMinWidth(300);
+            showModal(card1, 450, 450);
         } catch (Exception e) {
             e.printStackTrace();
         }

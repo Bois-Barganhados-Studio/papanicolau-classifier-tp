@@ -27,7 +27,7 @@ public class HSVHistogramController {
     hsvChart.getData().add(dataSeries);
 
     // Set chart title
-    hsvChart.setTitle("HSV Histogram");
+    hsvChart.setTitle("Histograma de tons de cor HSV");
 
     // Set axis labels
     hsvChart.getXAxis().setLabel("H");

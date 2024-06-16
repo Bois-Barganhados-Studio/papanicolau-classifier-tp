@@ -5,14 +5,11 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.indexer.FloatRawIndexer;
@@ -21,10 +18,7 @@ import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_core.Moments;
 import org.bytedeco.opencv.opencv_core.Rect;
 import org.bytedeco.opencv.opencv_core.Scalar;
-import org.opencv.core.Core;
-import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
-import org.opencv.imgproc.Imgproc;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.Size;
@@ -33,7 +27,6 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritablePixelFormat;
-import org.bytedeco.opencv.global.opencv_core;
 import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public final class Utils {
@@ -139,19 +132,6 @@ public final class Utils {
         return histogram;
     }
 
-    public static double[] calculateHuMoments(Mat mat) {
-        Mat binMat = new Mat();
-        opencv_imgproc.threshold(mat, binMat, 0, 255, opencv_imgproc.THRESH_BINARY);
-        Moments moments = opencv_imgproc.moments(binMat);
-        double[] huMoments = new double[7];
-        opencv_imgproc.HuMoments(moments, huMoments);
-        for (int j = 0; j < 7; j++) {
-            double a = -1 * Math.signum(huMoments[j]);
-            double b = (huMoments[j] == 0) ? 0 : Math.log10(Math.abs(huMoments[j]));
-            huMoments[j] = a * b;
-        }
-        return huMoments;
-    }
 
     public static Mat threshold(Mat image, int threshold) {
         Mat thresholded = new Mat();
@@ -306,6 +286,20 @@ public final class Utils {
         return hu;
     }
 
+    public static double[] calculateHuMoments(Mat mat) {
+        Mat binMat = new Mat();
+        opencv_imgproc.threshold(mat, binMat, 0, 255, opencv_imgproc.THRESH_BINARY);
+        Moments moments = opencv_imgproc.moments(binMat);
+        double[] huMoments = new double[7];
+        opencv_imgproc.HuMoments(moments, huMoments);
+        for (int j = 0; j < 7; j++) {
+            double a = -1 * Math.signum(huMoments[j]);
+            double b = (huMoments[j] == 0) ? 0 : Math.log10(Math.abs(huMoments[j]));
+            huMoments[j] = a * b;
+        }
+        return huMoments;
+    }
+
     public static Map<Integer, int[][]> calculateCoOccurrenceMatrices(Mat mat, int[] distances) {
         // Convert image to grayscale
         Mat grayMat = new Mat();
@@ -360,57 +354,37 @@ public final class Utils {
         if (image.channels() == 4) {
             cvtColor(image, image, COLOR_BGRA2BGR);
         }
-        // Convert image to grayscale
         Mat gray = new Mat();
         cvtColor(image, gray, COLOR_BGR2GRAY);
-
-        // Expand the image to optimal size for DFT
         Mat padded = new Mat();
         int m = opencv_core.getOptimalDFTSize(gray.rows());
         int n = opencv_core.getOptimalDFTSize(gray.cols());
         opencv_core.copyMakeBorder(gray, padded, 0, m - gray.rows(), 0, n - gray.cols(), opencv_core.BORDER_CONSTANT,
                 Scalar.all(0));
-
-        // Create optimal size complex planes to store DFT results
         Mat complexImage = new Mat();
         MatVector planes = new MatVector(new Mat(padded.size(), opencv_core.CV_32F),
                 new Mat(padded.size(), opencv_core.CV_32F));
         padded.convertTo(planes.get(0), opencv_core.CV_32F);
         planes.get(1).zeros(padded.size(), opencv_core.CV_32F);
         opencv_core.merge(planes, complexImage);
-
-        // Perform DFT
         opencv_core.dft(complexImage, complexImage);
-
-        // Shift the quadrants of the Fourier image to bring the low frequency
-        // components to the center
         shiftDFT(complexImage);
-
-        // Apply the low-pass filter
         Mat mask = new Mat(complexImage.size(), opencv_core.CV_32F);
         if (pass)
-            createHighPassFilter(mask, cutFreq); // Example cutoff frequency
+            createHighPassFilter(mask, cutFreq);
         else
-            createLowPassFilter(mask, cutFreq); // Example cutoff frequency
-
-        // Merge the mask with the original complexImage
+            createLowPassFilter(mask, cutFreq);
         MatVector newPlanes = new MatVector();
         opencv_core.split(complexImage, newPlanes);
         opencv_core.multiply(newPlanes.get(0), mask, newPlanes.get(0));
         opencv_core.multiply(newPlanes.get(1), mask, newPlanes.get(1));
         opencv_core.merge(newPlanes, complexImage);
-
-        // Inverse DFT
-        shiftDFT(complexImage); // Shift back
+        shiftDFT(complexImage);
         opencv_core.idft(complexImage, complexImage, opencv_core.DFT_SCALE | opencv_core.DFT_REAL_OUTPUT, -1);
-
-        // Normalize the result to range [0, 255]
         Mat result = new Mat();
         opencv_core.normalize(complexImage, complexImage, 0, 255, opencv_core.NORM_MINMAX, -1,
                 new Mat(0, 0, opencv_core.CV_8UC3));
-
         complexImage.convertTo(result, opencv_core.CV_8UC3);
-
         return result;
     }
 
@@ -422,11 +396,9 @@ public final class Utils {
         Mat q2 = new Mat(image, new Rect(0, cy, cx, cy));
         Mat q3 = new Mat(image, new Rect(cx, cy, cx, cy));
         Mat tmp = new Mat();
-
         q0.copyTo(tmp);
         q3.copyTo(q0);
         tmp.copyTo(q3);
-
         q1.copyTo(tmp);
         q2.copyTo(q1);
         tmp.copyTo(q2);
@@ -435,7 +407,6 @@ public final class Utils {
     private static void createLowPassFilter(Mat mask, float cutoffFrequency) {
         int rows = mask.rows();
         int cols = mask.cols();
-
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 float d = (i - rows / 2) * (i - rows / 2) + (j - cols / 2) * (j - cols / 2);
@@ -447,7 +418,6 @@ public final class Utils {
     private static void createHighPassFilter(Mat mask, float cutoffFrequency) {
         int rows = mask.rows();
         int cols = mask.cols();
-
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 float d = (i - rows / 2) * (i - rows / 2) + (j - cols / 2) * (j - cols / 2);
