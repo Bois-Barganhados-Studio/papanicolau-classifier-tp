@@ -113,6 +113,11 @@
                <Spinner fx:id="HSVHistogramSpinner" editable="true" min="0" max="255"
                   prefWidth="80" />
             </HBox>
+            <Button onAction="#openFourierChart" text="Espectro de Fourier">
+               <graphic>
+                  <FontIcon iconLiteral="mdal-insert_chart_outlined" iconSize="24" />
+               </graphic>
+            </Button>
             <Separator orientation="HORIZONTAL" />
             <Button onAction="#openHuMoments" text="Momentos de Hu">
                <graphic>

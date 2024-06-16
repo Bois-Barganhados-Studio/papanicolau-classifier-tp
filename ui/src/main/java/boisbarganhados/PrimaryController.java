@@ -363,7 +363,7 @@ public class PrimaryController {
     private void showDialog(Node node) {
         Dialog<Void> dialog = new Dialog<>();
         dialog.getDialogPane().setContent(node);
-        dialog.setResizable(false);
+        dialog.setResizable(true);
         dialog.initStyle(StageStyle.UNIFIED);
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
@@ -806,6 +806,25 @@ public class PrimaryController {
             controller.setHistogram(histogram);
             controller.start();
             showModal(node, 630, 500);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void openFourierChart() {
+        var image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        var mat = Utils.toMat(image);
+        try {
+            var loader = App.loadFXML("fourierChart");
+            Node node = loader.load();
+            FourierChartController controller = loader.getController();
+            controller.setYourImageMat(mat);
+            controller.start();
+            showModal(node, 800, 600);
         } catch (Exception e) {
             e.printStackTrace();
         }
