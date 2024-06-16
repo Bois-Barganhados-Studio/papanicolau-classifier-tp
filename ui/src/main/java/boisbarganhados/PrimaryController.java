@@ -712,26 +712,19 @@ public class PrimaryController {
         if (imageView.getImage() == null) {
             return;
         }
-        Task<Void> task = new Task<>() {
-            @Override
-            protected Void call() {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Salvar imagem");
-                fileChooser.getExtensionFilters().addAll(
-                        new FileChooser.ExtensionFilter("Imagens", "*.png", "*.jpg", "*.jpeg"));
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Salvar imagem");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Imagens", "*.png", "*.jpg", "*.jpeg"));
 
-                File file = fileChooser.showSaveDialog(null);
-                if (file != null) {
-                    try {
-                        ImageIO.write(SwingFXUtils.fromFXImage(imageView.getImage(), null), "png", file);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                return null;
+        File file = fileChooser.showSaveDialog(null);
+        if (file != null) {
+            try {
+                ImageIO.write(SwingFXUtils.fromFXImage(imageView.getImage(), null), "png", file);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        };
-        progressRunner(task, progressBar, null);
+        }
     }
 
     @FXML
