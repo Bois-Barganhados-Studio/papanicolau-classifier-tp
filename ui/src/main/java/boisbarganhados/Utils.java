@@ -17,6 +17,7 @@ import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_core.Moments;
 import org.opencv.core.CvType;
+import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgproc;
 
 import javafx.embed.swing.SwingFXUtils;
@@ -152,7 +153,10 @@ public final class Utils {
 
     public static Mat contrast(Mat image, double alpha, int beta) {
         Mat contrasted = new Mat();
-        image.convertTo(contrasted, -1, alpha, beta);
+        if (image.channels() == 4) {
+            cvtColor(image, image, COLOR_BGRA2BGR);
+        }
+        image.convertTo(contrasted, opencv_core.CV_8UC3, alpha, beta);
         return contrasted;
     }
 
