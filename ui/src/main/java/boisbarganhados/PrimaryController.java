@@ -13,6 +13,7 @@ import atlantafx.base.controls.ProgressSliderSkin;
 import atlantafx.base.controls.Tile;
 import atlantafx.base.theme.Styles;
 import atlantafx.base.util.Animations;
+import boisbarganhados.python_layer.Classifier;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.concurrent.Service;
@@ -60,7 +61,10 @@ import javafx.util.Duration;
 import lombok.Data;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Stack;
+import java.util.UUID;
 import java.util.function.Function;
 
 import javax.imageio.ImageIO;
@@ -1046,6 +1050,72 @@ public class PrimaryController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
+
+    @FXML
+    public void classifyImage() throws Exception {
+        var image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        try {
+            var path = Classifier.IMAGES_PY_CLASSIFIER_TMP;
+            var urlFile = image.getUrl();
+            path += urlFile != null ? urlFile.substring(image.getUrl().lastIndexOf("/") + 1)
+                    : "image_process" + UUID.randomUUID() + ".png";
+            System.out.println(path);
+            var file = new File(path);
+            ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
+            var pathRef = path;
+            Task<List<String>> task = new Task<>() {
+                @Override
+                protected List<String> call() throws Exception {
+                    var result = Classifier.classify(pathRef);
+                    return result;
+                }
+            };
+            Service<List<String>> service = new Service<>() {
+                @Override
+                protected Task<List<String>> createTask() {
+                    enableUi(false);
+                    progressBar.setVisible(true);
+                    progressBar.progressProperty().bind(task.progressProperty());
+                    return task;
+                }
+            };
+            task.onSucceededProperty().set(event -> {
+                enableUi(true);
+                var result = task.getValue();
+                var card1 = new Card();
+                card1.getStyleClass().add(Styles.ELEVATED_2);
+                card1.setMinWidth(300);
+                card1.setMaxWidth(300);
+                card1.setMaxHeight(300);
+                var header1 = new Tile("Resultado da classificação", "Resultado da classificação da imagem.");
+                card1.setHeader(header1);
+                var text1 = new TextFlow(new Text("\n\n" + "Resultado da classificação:\n"));
+                var printStart = false;
+                for (var r : result) {
+                    if (printStart)
+                        text1.getChildren().add(new Text(r + "\n"));
+                    else {
+                        printStart = r.contains("Binary Classifier Results:");
+                        if (printStart)
+                            text1.getChildren().add(new Text("Binary Classifier Results:" + "\n"));
+                    }
+                }
+                text1.setMaxWidth(260);
+                card1.setBody(text1);
+                showModal(card1, 400, 300);
+            });
+            task.onFailedProperty().set(event -> {
+                enableUi(true);
+                showNotification("Erro", "Ocorreu um erro durante o processamento.", Styles.DANGER);
+            });
+            service.start();
+        } catch (IOException e) {
+            throw e;
+        }
+    }
+
 }

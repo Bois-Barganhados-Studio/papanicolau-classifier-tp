@@ -130,7 +130,7 @@
                   <FontIcon iconLiteral="mdoal-format_list_numbered" iconSize="24" />
                </graphic>
             </Button>
-            <Button text="Classificar imagem">
+            <Button onAction = "#classifyImage" text="Classificar imagem">
                <graphic>
                   <FontIcon iconLiteral="mdi2i-image-search" iconSize="24" />
                </graphic>
