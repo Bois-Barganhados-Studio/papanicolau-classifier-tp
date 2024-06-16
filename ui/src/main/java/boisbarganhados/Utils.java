@@ -10,20 +10,25 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import org.bytedeco.javacpp.DoublePointer;
 import org.bytedeco.javacpp.FloatPointer;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.indexer.FloatRawIndexer;
 import org.bytedeco.opencv.opencv_core.Mat;
 import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_core.Moments;
+import org.bytedeco.opencv.opencv_core.Rect;
+import org.bytedeco.opencv.opencv_core.Scalar;
+import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
 import org.bytedeco.opencv.global.opencv_imgproc;
+import org.bytedeco.opencv.opencv_core.Size;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritablePixelFormat;
-
+import org.bytedeco.opencv.global.opencv_core;
 import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public final class Utils {
@@ -185,7 +190,7 @@ public final class Utils {
                 break;
             default:
                 throw new IllegalArgumentException("Invalid color");
-            
+
         }
         org.bytedeco.opencv.global.opencv_core.merge(mergeChannels, filteredImage);
         return filteredImage;
@@ -261,4 +266,105 @@ public final class Utils {
 
         return coOccurrenceMatrices;
     }
+
+    public static Mat applyFourierFilter(Mat image, float cutFreq, boolean pass) {
+        if (image.channels() == 4) {
+            cvtColor(image, image, COLOR_BGRA2BGR);
+        }
+        // Convert image to grayscale
+        Mat gray = new Mat();
+        cvtColor(image, gray, COLOR_BGR2GRAY);
+
+        // Expand the image to optimal size for DFT
+        Mat padded = new Mat();
+        int m = opencv_core.getOptimalDFTSize(gray.rows());
+        int n = opencv_core.getOptimalDFTSize(gray.cols());
+        opencv_core.copyMakeBorder(gray, padded, 0, m - gray.rows(), 0, n - gray.cols(), opencv_core.BORDER_CONSTANT,
+                Scalar.all(0));
+
+        // Create optimal size complex planes to store DFT results
+        Mat complexImage = new Mat();
+        MatVector planes = new MatVector(new Mat(padded.size(), opencv_core.CV_32F),
+                new Mat(padded.size(), opencv_core.CV_32F));
+        padded.convertTo(planes.get(0), opencv_core.CV_32F);
+        planes.get(1).zeros(padded.size(), opencv_core.CV_32F);
+        opencv_core.merge(planes, complexImage);
+
+        // Perform DFT
+        opencv_core.dft(complexImage, complexImage);
+
+        // Shift the quadrants of the Fourier image to bring the low frequency
+        // components to the center
+        shiftDFT(complexImage);
+
+        // Apply the low-pass filter
+        Mat mask = new Mat(complexImage.size(), opencv_core.CV_32F);
+        if(pass)
+			createHighPassFilter(mask, cutFreq); // Example cutoff frequency
+		else
+			createLowPassFilter(mask, cutFreq); // Example cutoff frequency
+
+        // Merge the mask with the original complexImage
+        MatVector newPlanes = new MatVector();
+        opencv_core.split(complexImage, newPlanes);
+        opencv_core.multiply(newPlanes.get(0), mask, newPlanes.get(0));
+        opencv_core.multiply(newPlanes.get(1), mask, newPlanes.get(1));
+        opencv_core.merge(newPlanes, complexImage);
+
+        // Inverse DFT
+        shiftDFT(complexImage); // Shift back
+        opencv_core.idft(complexImage, complexImage, opencv_core.DFT_SCALE | opencv_core.DFT_REAL_OUTPUT, -1);
+
+        // Normalize the result to range [0, 255]
+        Mat result = new Mat();
+        opencv_core.normalize(complexImage, complexImage, 0, 255, opencv_core.NORM_MINMAX, -1,
+                new Mat(0, 0, opencv_core.CV_8UC3));
+
+        complexImage.convertTo(result, opencv_core.CV_8UC3);
+
+        return result;
+    }
+
+    private static void shiftDFT(Mat image) {
+        int cx = image.cols() / 2;
+        int cy = image.rows() / 2;
+        Mat q0 = new Mat(image, new Rect(0, 0, cx, cy));
+        Mat q1 = new Mat(image, new Rect(cx, 0, cx, cy));
+        Mat q2 = new Mat(image, new Rect(0, cy, cx, cy));
+        Mat q3 = new Mat(image, new Rect(cx, cy, cx, cy));
+        Mat tmp = new Mat();
+
+        q0.copyTo(tmp);
+        q3.copyTo(q0);
+        tmp.copyTo(q3);
+
+        q1.copyTo(tmp);
+        q2.copyTo(q1);
+        tmp.copyTo(q2);
+    }
+
+    private static void createLowPassFilter(Mat mask, float cutoffFrequency) {
+        int rows = mask.rows();
+        int cols = mask.cols();
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                float d = (i - rows / 2) * (i - rows / 2) + (j - cols / 2) * (j - cols / 2);
+                mask.ptr(i, j).putFloat((float) Math.exp(-d / (2 * cutoffFrequency * cutoffFrequency)));
+            }
+        }
+    }
+
+    private static void createHighPassFilter(Mat mask, float cutoffFrequency) {
+        int rows = mask.rows();
+        int cols = mask.cols();
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                float d = (i - rows / 2) * (i - rows / 2) + (j - cols / 2) * (j - cols / 2);
+                mask.ptr(i, j).putFloat((float) (1 - Math.exp(-d / (2 * cutoffFrequency * cutoffFrequency))));
+            }
+        }
+    }
+
 }
