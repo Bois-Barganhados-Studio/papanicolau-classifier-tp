@@ -5,7 +5,9 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -19,8 +21,10 @@ import org.bytedeco.opencv.opencv_core.MatVector;
 import org.bytedeco.opencv.opencv_core.Moments;
 import org.bytedeco.opencv.opencv_core.Rect;
 import org.bytedeco.opencv.opencv_core.Scalar;
+import org.opencv.core.Core;
 import org.opencv.core.Core.MinMaxLocResult;
 import org.opencv.core.CvType;
+import org.opencv.imgproc.Imgproc;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.global.opencv_imgproc;
 import org.bytedeco.opencv.opencv_core.Size;
@@ -108,8 +112,7 @@ public final class Utils {
 
     // Function to calculate 2D HSV histogram with quantization of 16 values for H
     // and 8 values for V
-    public static float[][] hsvHist(Mat mat) {
-        int hBins = 16;
+    public static float[][] hsvHist(Mat mat, Integer hBins) {
         int vBins = 8;
         float[] hRange = { 0, 180 }; // H channel range for HSV
         float[] vRange = { 0, 256 }; // V channel range for HSV
@@ -152,8 +155,20 @@ public final class Utils {
 
     public static Mat threshold(Mat image, int threshold) {
         Mat thresholded = new Mat();
+        if (image.channels() == 4) {
+            cvtColor(image, image, COLOR_BGRA2BGR);
+        }
         opencv_imgproc.threshold(image, thresholded, threshold, 255, opencv_imgproc.THRESH_BINARY);
         return thresholded;
+    }
+
+    public static Mat invert(Mat image) {
+        Mat inverted = new Mat();
+        if (image.channels() == 4) {
+            cvtColor(image, image, COLOR_BGRA2BGR);
+        }
+        opencv_core.bitwise_not(image, inverted);
+        return inverted;
     }
 
     public static Mat contrast(Mat image, double alpha, int beta) {
@@ -164,6 +179,76 @@ public final class Utils {
         image.convertTo(contrasted, opencv_core.CV_8UC3, alpha, beta);
         return contrasted;
     }
+
+    public static Mat saturate(Mat image, double alpha) {
+        Mat saturated = new Mat();
+        if (image.channels() == 4) {
+            cvtColor(image, image, COLOR_BGRA2BGR);
+        }
+        opencv_imgproc.cvtColor(image, saturated, opencv_imgproc.COLOR_BGR2HSV);
+
+        MatVector hsvChannels = new MatVector();
+        opencv_core.split(saturated, hsvChannels);
+
+        Mat saturation = hsvChannels.get(1);
+        saturation.convertTo(saturation, -1, alpha, 0);
+
+        opencv_core.merge(hsvChannels, saturated);
+
+        Mat saturatedImage = new Mat();
+        opencv_imgproc.cvtColor(saturated, saturatedImage, opencv_imgproc.COLOR_HSV2BGR);
+
+        return saturatedImage;
+    }
+
+    public static Mat brightness(Mat image, double beta) {
+        Mat brightened = new Mat();
+        if (image.channels() == 4) {
+            opencv_imgproc.cvtColor(image, image, opencv_imgproc.COLOR_BGRA2BGR);
+        }
+    
+        // Change the brightness by adding beta to all pixel values
+        image.convertTo(brightened, -1, 1, beta);
+    
+        return brightened;
+    }
+
+    public static Mat hue(Mat image, double shift) {
+        Mat hsvImage = new Mat();
+        if (image.channels() == 4) {
+            opencv_imgproc.cvtColor(image, image, opencv_imgproc.COLOR_BGRA2BGR);
+        }
+        opencv_imgproc.cvtColor(image, hsvImage, opencv_imgproc.COLOR_BGR2HSV);
+
+        MatVector hsvChannels = new MatVector();
+        opencv_core.split(hsvImage, hsvChannels);
+
+        Mat hue = hsvChannels.get(0);
+        hue.convertTo(hue, hue.type(), 1, shift);
+
+        opencv_core.merge(hsvChannels, hsvImage);
+
+        Mat hueAdjusted = new Mat();
+        opencv_imgproc.cvtColor(hsvImage, hueAdjusted, opencv_imgproc.COLOR_HSV2BGR);
+
+        return hueAdjusted;
+    }
+
+    public static Mat sharpness(Mat image, double alpha) {
+        Mat blurred = new Mat();
+        Mat sharpened = new Mat();
+    
+        if (image.channels() == 4) {
+            opencv_imgproc.cvtColor(image, image, opencv_imgproc.COLOR_BGRA2BGR);
+        }
+    
+        opencv_imgproc.GaussianBlur(image, blurred, new Size(0, 0), 10);
+    
+        opencv_core.addWeighted(image, 1 + alpha, blurred, -alpha, 0.0, sharpened);
+    
+        return sharpened;
+    }
+    
 
     public static Mat colorFilter(Mat image, Color color) {
         Mat filteredImage = new Mat();
@@ -303,10 +388,10 @@ public final class Utils {
 
         // Apply the low-pass filter
         Mat mask = new Mat(complexImage.size(), opencv_core.CV_32F);
-        if(pass)
-			createHighPassFilter(mask, cutFreq); // Example cutoff frequency
-		else
-			createLowPassFilter(mask, cutFreq); // Example cutoff frequency
+        if (pass)
+            createHighPassFilter(mask, cutFreq); // Example cutoff frequency
+        else
+            createLowPassFilter(mask, cutFreq); // Example cutoff frequency
 
         // Merge the mask with the original complexImage
         MatVector newPlanes = new MatVector();

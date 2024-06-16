@@ -10,8 +10,8 @@ module boisbarganhados {
     requires org.kordamp.ikonli.core;
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.ikonli.material2;
+    requires org.kordamp.ikonli.materialdesign2;
     requires org.bytedeco.javacv;
-    requires com.formdev.flatlaf;
 
     opens boisbarganhados to javafx.fxml;
     exports boisbarganhados;

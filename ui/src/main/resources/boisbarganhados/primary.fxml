@@ -16,6 +16,11 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.text.Text?>
 
 <StackPane id="primaryContainer" fx:id="primaryContainer" xmlns="http://javafx.com/javafx/8"
    xmlns:fx="http://javafx.com/fxml/1"
@@ -37,43 +42,119 @@
       </center>
       <left>
          <ToolBar fx:id="leftBar" id="leftBar" orientation="vertical">
-            <Button onAction="#bwFilter">
+            <Button onAction="#bwFilter" text="Tons de Cinza">
                <graphic>
                   <FontIcon iconLiteral="mdal-filter_b_and_w" iconSize="24" />
                </graphic>
             </Button>
-            <Button onAction="#redFilter">
+            <HBox spacing="4">
+               <Button fx:id="binButton" onAction="#binFilter" text="Binarização">
+                  <graphic>
+                     <FontIcon iconLiteral="mdal-filter_1" iconSize="24" />
+                  </graphic>
+               </Button>
+               <Pane HBox.hgrow="ALWAYS" />
+               <Spinner fx:id="binSpinner" editable="true" min="0" max="255" prefWidth="80" />
+            </HBox>
+            <Button onAction="#invertFilter" text="Inverter Cores">
                <graphic>
-                  <FontIcon iconLiteral="mdal-filter_none" iconSize="24" />
+                  <FontIcon iconLiteral="mdal-invert_colors" iconSize="24" />
                </graphic>
             </Button>
-            <Button onAction="#greenFilter">
+            <Button onAction="#redFilter" text="R. Vermelho">
                <graphic>
-                  <FontIcon iconLiteral="mdal-filter_2" iconSize="24" />
+                  <FontIcon iconLiteral="mdi2t-transition-masked" iconSize="24" />
                </graphic>
             </Button>
-            <Button onAction="#blueFilter">
+            <Button onAction="#greenFilter" text="R. Verde">
                <graphic>
-                  <FontIcon iconLiteral="mdal-filter_3" iconSize="24" />
+                  <FontIcon iconLiteral="mdi2t-transition-masked" iconSize="24" />
                </graphic>
             </Button>
-            <Button onAction="#openGrayHistogram">
+            <Button onAction="#blueFilter" text="R. Azul">
                <graphic>
-                  <FontIcon iconLiteral="mdal-insert_chart_outlined" iconSize="24" />
+                  <FontIcon iconLiteral="mdi2t-transition-masked" iconSize="24" />
                </graphic>
             </Button>
-            <Button onAction="#openHSVHistogram">
-               <graphic>
-                  <FontIcon iconLiteral="mdmz-show_chart" iconSize="24" />
-               </graphic>
-            </Button>
-            <Button onAction="#openHuMoments">
+            <Separator orientation="HORIZONTAL" />
+            <HBox spacing="4">
+               <VBox spacing="4" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT">
+                  <Button fx:id="lowPassButton" text="Passa Alta">
+                     <graphic>
+                        <FontIcon iconLiteral="mdsmz-minus" iconSize="24" />
+                     </graphic>
+                  </Button>
+                  <Button fx:id="highPassButton" text="Passa Baixa">
+                     <graphic>
+                        <FontIcon iconLiteral="mdsmz-plus" iconSize="24" />
+                     </graphic>
+                  </Button>
+               </VBox>
+               <Spinner fx:id="fourierSpinner" editable="true" min="0" max="255" prefWidth="80" />
+            </HBox>
+            <Separator orientation="HORIZONTAL" />
+            <HBox spacing="4">
+               <Button fx:id="grayHistogramButton" onAction="#openGrayHistogram"
+                  text="Histograma de Cinza">
+                  <graphic>
+                     <FontIcon iconLiteral="mdal-insert_chart_outlined" iconSize="24" />
+                  </graphic>
+               </Button>
+               <Spinner fx:id="grayHistogramSpinner" editable="true" min="0" max="255"
+                  prefWidth="80" />
+            </HBox>
+            <HBox spacing="4">
+               <Button fx:id="HSVHistogramButton" onAction="#openHSVHistogram" text="Histograma HSV">
+                  <graphic>
+                     <FontIcon iconLiteral="mdmz-show_chart" iconSize="24" />
+                  </graphic>
+               </Button>
+               <Pane HBox.hgrow="ALWAYS" />
+               <Spinner fx:id="HSVHistogramSpinner" editable="true" min="0" max="255"
+                  prefWidth="80" />
+            </HBox>
+            <Separator orientation="HORIZONTAL" />
+            <Button onAction="#openHuMoments" text="Momentos de Hu">
                <graphic>
                   <FontIcon iconLiteral="mdoal-description" iconSize="24" />
                </graphic>
             </Button>
          </ToolBar>
       </left>
+      <bottom>
+         <ToolBar HBox.hgrow="ALWAYS">
+            <FontIcon iconLiteral="mdi2c-contrast-circle" iconSize="24" />
+            <VBox>
+               <Label text="Contraste" />
+               <HBox fx:id="contrastSliderWrapper" alignment="CENTER_LEFT">
+               </HBox>
+            </VBox>
+            <FontIcon iconLiteral="mdi2c-contrast-circle" iconSize="24" />
+            <VBox>
+               <Label text="Saturação" />
+               <HBox fx:id="saturationSliderWrapper" alignment="CENTER_LEFT">
+               </HBox>
+            </VBox>
+            <FontIcon iconLiteral="mdi2c-contrast-circle" iconSize="24" />
+            <VBox>
+               <Label text="Brilho" />
+               <HBox fx:id="brightnessSliderWrapper" alignment="CENTER_LEFT">
+               </HBox>
+            </VBox>
+            <FontIcon iconLiteral="mdi2c-contrast-circle" iconSize="24" />
+            <VBox>
+               <Label text="Matiz" />
+               <HBox fx:id="hueSliderWrapper" alignment="CENTER_LEFT">
+               </HBox>
+            </VBox>
+            <FontIcon iconLiteral="mdi2c-contrast-circle" iconSize="24" />
+            <VBox>
+               <Label text="Nitidez" />
+               <HBox fx:id="sharpnessSliderWrapper" alignment="CENTER_LEFT">
+               </HBox>
+            </VBox>
+         </ToolBar>
+      </bottom>
       <top>
          <HBox VBox.vgrow="NEVER">
             <ToolBar fx:id="topBar" id="topBar" HBox.hgrow="ALWAYS">
@@ -85,13 +166,23 @@
                         </graphic>
                      </MenuItem>
                      <SeparatorMenuItem />
-                     <MenuItem text="Salvar">
+                     <MenuItem fx:id="saveButton" text="Salvar" onAction="#saveImage" disable="true">
                         <graphic>
                            <FontIcon iconLiteral="mdomz-save" iconSize="36" />
                         </graphic>
                      </MenuItem>
                   </items>
                </MenuButton>
+               <Button fx:id="undoButton" onAction="#undo" disable="true">
+                  <graphic>
+                     <FontIcon iconLiteral="mdrmz-undo" iconSize="24" />
+                  </graphic>
+               </Button>
+               <Button fx:id="redoButton" onAction="#redo" disable="true">
+                  <graphic>
+                     <FontIcon iconLiteral="mdrmz-redo" iconSize="24" />
+                  </graphic>
+               </Button>
                <Pane HBox.hgrow="ALWAYS" />
                <Button onAction="#minimizeWindow">
                   <graphic>
