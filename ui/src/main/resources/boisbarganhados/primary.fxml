@@ -21,6 +21,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.control.ProgressBar?>
 
 <StackPane id="primaryContainer" fx:id="primaryContainer" xmlns="http://javafx.com/javafx/8"
    xmlns:fx="http://javafx.com/fxml/1"
@@ -168,6 +169,8 @@
                <HBox fx:id="sharpnessSliderWrapper" alignment="CENTER_LEFT">
                </HBox>
             </VBox>
+            <!-- Progress bar infinite loading style -->
+            <ProgressBar fx:id="progressBar" prefWidth="200" visible="false" />
          </ToolBar>
       </bottom>
       <top>

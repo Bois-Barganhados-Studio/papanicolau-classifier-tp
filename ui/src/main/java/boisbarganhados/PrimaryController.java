@@ -3,22 +3,33 @@ package boisbarganhados;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.global.opencv_imgproc;
+import org.bytedeco.opencv.opencv_core.Mat;
 import org.kordamp.ikonli.javafx.FontIcon;
+
 import atlantafx.base.controls.Card;
 import atlantafx.base.controls.ModalPane;
+import atlantafx.base.controls.Notification;
 import atlantafx.base.controls.ProgressSliderSkin;
 import atlantafx.base.controls.Tile;
 import atlantafx.base.theme.Styles;
+import atlantafx.base.util.Animations;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SeparatorMenuItem;
@@ -35,6 +46,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -49,6 +61,8 @@ import lombok.Data;
 
 import java.io.File;
 import java.util.Stack;
+import java.util.function.Function;
+
 import javax.imageio.ImageIO;
 
 @Data
@@ -74,6 +88,7 @@ public class PrimaryController {
     private Slider hueSlider;
     private Slider brightnessSlider;
     private Slider sharpnessSlider;
+    private ContextMenu contextMenu;
 
     @FXML
     private StackPane primaryContainer;
@@ -121,6 +136,8 @@ public class PrimaryController {
     private HBox brightnessSliderWrapper;
     @FXML
     private HBox sharpnessSliderWrapper;
+    @FXML
+    private ProgressBar progressBar;
 
     public void zoomImage(double zoomFactor) {
         imageView.setScaleX(imageView.getScaleX() * zoomFactor);
@@ -136,6 +153,78 @@ public class PrimaryController {
                 : ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(newHeight > scrollPane.getHeight() ? ScrollPane.ScrollBarPolicy.ALWAYS
                 : ScrollPane.ScrollBarPolicy.NEVER);
+    }
+
+    private void progressRunner(Task<Void> task, ProgressBar progressBar, Function<Void, Void> onSucceeded) {
+        enableUi(false);
+        progressBar.setVisible(true);
+        progressBar.progressProperty().bind(task.progressProperty());
+        Service<Void> service = new Service<>() {
+            @Override
+            protected Task<Void> createTask() {
+                return task;
+            }
+        };
+        task.onSucceededProperty().set(event -> {
+            enableUi(true);
+            showNotification("Tarefa concluída", "Processamento completo!", Styles.SUCCESS);
+            if (onSucceeded != null)
+                onSucceeded.apply(null);
+        });
+        task.onFailedProperty().set(event -> {
+            enableUi(true);
+            showNotification("Erro", "Ocorreu um erro durante o processamento.", Styles.DANGER);
+        });
+        task.onCancelledProperty().set(event -> {
+            enableUi(true);
+            showNotification("Cancelado", "O processamento foi cancelado.", Styles.WARNING);
+        });
+        service.start();
+    }
+
+    private void showNotification(String title, String message, String accent) {
+        var fontIcon = new FontIcon("mdi2c-check");
+        Notification msg = new Notification(title + "\n" + message, fontIcon);
+        msg.getStyleClass().addAll(
+                accent, Styles.ELEVATED_1);
+        msg.setPrefHeight(Region.USE_PREF_SIZE);
+        msg.setMaxHeight(Region.USE_PREF_SIZE);
+        StackPane.setAlignment(msg, Pos.TOP_RIGHT);
+        StackPane.setMargin(msg, new Insets(10, 10, 0, 0));
+
+        msg.setOnClose(e -> {
+            var out = Animations.slideOutUp(msg, Duration.millis(250));
+            out.setOnFinished(f -> this.primaryContainer.getChildren().remove(msg));
+            out.playFromStart();
+        });
+
+        var in = Animations.slideInDown(msg, Duration.millis(250));
+        if (!this.primaryContainer.getChildren().contains(msg)) {
+            this.primaryContainer.getChildren().add(msg);
+        }
+        in.playFromStart();
+
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> {
+            if (this.primaryContainer.getChildren().contains(msg))
+                this.primaryContainer.getChildren().remove(msg);
+        }));
+        timeline.setCycleCount(1);
+        timeline.play();
+    }
+
+    private void enableUi(boolean enable) {
+        leftBar.getItems().forEach(item -> item.setDisable(!enable));
+        topBar.getItems().forEach(item -> item.setDisable(!enable));
+        contrastSlider.setDisable(!enable);
+        saturationSlider.setDisable(!enable);
+        hueSlider.setDisable(!enable);
+        brightnessSlider.setDisable(!enable);
+        sharpnessSlider.setDisable(!enable);
+        saveButton.setDisable(!enable);
+        undoButton.setDisable(!enable);
+        redoButton.setDisable(!enable);
+        progressBar.setVisible(false);
+        contextMenu.getItems().forEach(item -> item.setDisable(!enable));
     }
 
     public void resetImageZoom() {
@@ -509,7 +598,7 @@ public class PrimaryController {
             }
         });
 
-        var contextMenu = new javafx.scene.control.ContextMenu();
+        contextMenu = new javafx.scene.control.ContextMenu();
         var zoomInMenuItem = new MenuItem("Zoom In");
         zoomInMenuItem.setOnAction(event -> zoomImage(1.1));
         zoomInMenuItem.setGraphic(new FontIcon("mdi2m-magnify-plus"));
@@ -535,7 +624,6 @@ public class PrimaryController {
     private void minimizeWindow() {
         stage.setIconified(true);
     }
-
 
     public void startKeyBindings() {
         var scene = stage.getScene();
@@ -628,19 +716,26 @@ public class PrimaryController {
         if (imageView.getImage() == null) {
             return;
         }
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Salvar imagem");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Imagens", "*.png", "*.jpg", "*.jpeg"));
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Salvar imagem");
+                fileChooser.getExtensionFilters().addAll(
+                        new FileChooser.ExtensionFilter("Imagens", "*.png", "*.jpg", "*.jpeg"));
 
-        File file = fileChooser.showSaveDialog(null);
-        if (file != null) {
-            try {
-                ImageIO.write(SwingFXUtils.fromFXImage(imageView.getImage(), null), "png", file);
-            } catch (Exception e) {
-                e.printStackTrace();
+                File file = fileChooser.showSaveDialog(null);
+                if (file != null) {
+                    try {
+                        ImageIO.write(SwingFXUtils.fromFXImage(imageView.getImage(), null), "png", file);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                return null;
             }
-        }
+        };
+        progressRunner(task, progressBar, null);
     }
 
     @FXML
@@ -649,14 +744,22 @@ public class PrimaryController {
         if (image == null) {
             return;
         }
-        var mat = Utils.toMat(image);
-        opencv_imgproc.cvtColor(mat, mat, opencv_imgproc.COLOR_BGR2GRAY);
-        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
-                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
-            var bwBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(mat));
-            Image bwImage = Utils.bufferedImageToJavafxImage(bwBufferedImage);
-            editImage(bwImage);
-        }
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+
+                var mat = Utils.toMat(image);
+                opencv_imgproc.cvtColor(mat, mat, opencv_imgproc.COLOR_BGR2GRAY);
+                try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                        OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+                    var bwBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(mat));
+                    Image bwImage = Utils.bufferedImageToJavafxImage(bwBufferedImage);
+                    editImage(bwImage);
+                }
+                return null;
+            }
+        };
+        progressRunner(task, progressBar, null);
     }
 
     @FXML
@@ -665,14 +768,21 @@ public class PrimaryController {
         if (image == null) {
             return;
         }
-        var mat = Utils.toMat(image);
-        mat = Utils.applyFourierFilter(mat, fourierSpinner.getValue(), true);
-        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
-                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
-            var bwBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(mat));
-            Image bwImage = Utils.bufferedImageToJavafxImage(bwBufferedImage);
-            editImage(bwImage);
-        }
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                var mat = Utils.toMat(image);
+                mat = Utils.applyFourierFilter(mat, fourierSpinner.getValue(), true);
+                try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                        OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+                    var bwBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(mat));
+                    Image bwImage = Utils.bufferedImageToJavafxImage(bwBufferedImage);
+                    editImage(bwImage);
+                }
+                return null;
+            }
+        };
+        progressRunner(task, progressBar, null);
     }
 
     @FXML
@@ -681,14 +791,21 @@ public class PrimaryController {
         if (image == null) {
             return;
         }
-        var mat = Utils.toMat(image);
-        mat = Utils.applyFourierFilter(mat, fourierSpinner.getValue(), false);
-        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
-                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
-            var bwBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(mat));
-            Image bwImage = Utils.bufferedImageToJavafxImage(bwBufferedImage);
-            editImage(bwImage);
-        }
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                var mat = Utils.toMat(image);
+                mat = Utils.applyFourierFilter(mat, fourierSpinner.getValue(), false);
+                try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                        OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+                    var bwBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(mat));
+                    Image bwImage = Utils.bufferedImageToJavafxImage(bwBufferedImage);
+                    editImage(bwImage);
+                }
+                return null;
+            }
+        };
+        progressRunner(task, progressBar, null);
     }
 
     @FXML
@@ -697,14 +814,21 @@ public class PrimaryController {
         if (image == null) {
             return;
         }
-        var mat = Utils.toMat(image);
-        var bufferRed = Utils.colorFilter(mat, Color.RED);
-        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
-                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
-            var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
-            Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
-            editImage(redImage);
-        }
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                var mat = Utils.toMat(image);
+                var bufferRed = Utils.colorFilter(mat, Color.RED);
+                try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                        OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+                    var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
+                    Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
+                    editImage(redImage);
+                }
+                return null;
+            }
+        };
+        progressRunner(task, progressBar, null);
     }
 
     @FXML
@@ -713,14 +837,21 @@ public class PrimaryController {
         if (image == null) {
             return;
         }
-        var mat = Utils.toMat(image);
-        var bufferRed = Utils.colorFilter(mat, Color.GREEN);
-        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
-                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
-            var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
-            Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
-            editImage(redImage);
-        }
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                var mat = Utils.toMat(image);
+                var bufferRed = Utils.colorFilter(mat, Color.GREEN);
+                try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                        OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+                    var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
+                    Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
+                    editImage(redImage);
+                }
+                return null;
+            }
+        };
+        progressRunner(task, progressBar, null);
     }
 
     @FXML
@@ -729,14 +860,21 @@ public class PrimaryController {
         if (image == null) {
             return;
         }
-        var mat = Utils.toMat(image);
-        var bufferRed = Utils.colorFilter(mat, Color.BLUE);
-        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
-                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
-            var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
-            Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
-            editImage(redImage);
-        }
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                var mat = Utils.toMat(image);
+                var bufferRed = Utils.colorFilter(mat, Color.BLUE);
+                try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                        OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+                    var redBufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(bufferRed));
+                    Image redImage = Utils.bufferedImageToJavafxImage(redBufferedImage);
+                    editImage(redImage);
+                }
+                return null;
+            }
+        };
+        progressRunner(task, progressBar, null);
     }
 
     @FXML
@@ -745,14 +883,21 @@ public class PrimaryController {
         if (image == null) {
             return;
         }
-        var mat = Utils.toMat(image);
-        var buffer = Utils.threshold(mat, binSpinner.getValue());
-        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
-                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
-            var bufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(buffer));
-            Image redImage = Utils.bufferedImageToJavafxImage(bufferedImage);
-            editImage(redImage);
-        }
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                var mat = Utils.toMat(image);
+                var buffer = Utils.threshold(mat, binSpinner.getValue());
+                try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                        OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+                    var bufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(buffer));
+                    Image redImage = Utils.bufferedImageToJavafxImage(bufferedImage);
+                    editImage(redImage);
+                }
+                return null;
+            }
+        };
+        progressRunner(task, progressBar, null);
     }
 
     @FXML
@@ -761,14 +906,21 @@ public class PrimaryController {
         if (image == null) {
             return;
         }
-        var mat = Utils.toMat(image);
-        var buffer = Utils.invert(mat);
-        try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
-                OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
-            var bufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(buffer));
-            Image redImage = Utils.bufferedImageToJavafxImage(bufferedImage);
-            editImage(redImage);
-        }
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() {
+                var mat = Utils.toMat(image);
+                var buffer = Utils.invert(mat);
+                try (Java2DFrameConverter java2DFrameConverter = new Java2DFrameConverter();
+                        OpenCVFrameConverter.ToMat openCVFrameConverter = new OpenCVFrameConverter.ToMat()) {
+                    var bufferedImage = java2DFrameConverter.convert(openCVFrameConverter.convert(buffer));
+                    Image redImage = Utils.bufferedImageToJavafxImage(bufferedImage);
+                    editImage(redImage);
+                }
+                return null;
+            }
+        };
+        progressRunner(task, progressBar, null);
     }
 
     @FXML
@@ -817,17 +969,44 @@ public class PrimaryController {
         if (image == null) {
             return;
         }
-        var mat = Utils.toMat(image);
-        try {
-            var loader = App.loadFXML("fourierChart");
-            Node node = loader.load();
-            FourierChartController controller = loader.getController();
-            controller.setYourImageMat(mat);
-            controller.start();
-            showModal(node, 800, 600);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Task<Mat> task = new Task<>() {
+            @Override
+            protected Mat call() {
+                var mat = Utils.toMat(image);
+                var spectrum = Utils.getFourierSpectrum(mat); // Sua imagem Mat
+                return spectrum;
+            }
+        };
+        Service<Mat> service = new Service<>() {
+            @Override
+            protected Task<Mat> createTask() {
+                enableUi(false);
+                progressBar.setVisible(true);
+                progressBar.progressProperty().bind(task.progressProperty());
+                return task;
+            }
+        };
+
+        task.onSucceededProperty().set(event -> {
+            try {
+                var loader = App.loadFXML("fourierChart");
+                Node node = loader.load();
+                FourierChartController controller = loader.getController();
+                controller.setSpectrumMat(task.getValue());
+                controller.start();
+                enableUi(true);
+                showModal(node, 800, 600);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        task.onFailedProperty().set(event -> {
+            enableUi(true);
+            showNotification("Erro", "Ocorreu um erro durante o processamento.", Styles.DANGER);
+        });
+
+        service.start();
     }
 
     @FXML
@@ -878,5 +1057,6 @@ public class PrimaryController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 }
