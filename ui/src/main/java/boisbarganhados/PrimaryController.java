@@ -214,15 +214,11 @@ public class PrimaryController {
 
     private void enableUi(boolean enable) {
         leftBar.getItems().forEach(item -> item.setDisable(!enable));
-        topBar.getItems().forEach(item -> item.setDisable(!enable));
         contrastSlider.setDisable(!enable);
         saturationSlider.setDisable(!enable);
         hueSlider.setDisable(!enable);
         brightnessSlider.setDisable(!enable);
         sharpnessSlider.setDisable(!enable);
-        saveButton.setDisable(!enable);
-        undoButton.setDisable(!enable);
-        redoButton.setDisable(!enable);
         progressBar.setVisible(false);
         contextMenu.getItems().forEach(item -> item.setDisable(!enable));
     }
@@ -453,7 +449,7 @@ public class PrimaryController {
         Dialog<Void> dialog = new Dialog<>();
         dialog.getDialogPane().setContent(node);
         dialog.setResizable(true);
-        dialog.initStyle(StageStyle.UNIFIED);
+        dialog.initStyle(StageStyle.DECORATED);
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         dialog.getDialogPane().lookupButton(ButtonType.CLOSE).setVisible(false);
