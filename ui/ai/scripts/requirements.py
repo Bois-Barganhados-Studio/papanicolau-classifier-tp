@@ -25,8 +25,6 @@ if __name__ == "__main__":
 
     # Import installed packages
     install_and_import('numpy')
-    install_and_import('tensorflow')
-    install_and_import('keras')
     install_and_import('torch')
     install_and_import('torchvision')
     install_and_import('skimage.feature')

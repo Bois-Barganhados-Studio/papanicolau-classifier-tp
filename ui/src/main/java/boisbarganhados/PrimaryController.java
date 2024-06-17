@@ -1093,9 +1093,9 @@ public class PrimaryController {
                 card1.setMinWidth(300);
                 card1.setMaxWidth(300);
                 card1.setMaxHeight(300);
-                var header1 = new Tile("Resultado da classificação", "Resultado da classificação da imagem.");
+                var header1 = new Tile("Resultado da classificação", "Resultado da classificação da imagem utilizando modelos pré treinados (SVM e EfficientNet).");
                 card1.setHeader(header1);
-                var text1 = new TextFlow(new Text("\n\n" + "Resultado da classificação:\n"));
+                var text1 = new TextFlow(new Text("\n\n" + "Resultados para Binário e Multiclass:\n"));
                 var printStart = false;
                 for (var r : result) {
                     if (printStart)
