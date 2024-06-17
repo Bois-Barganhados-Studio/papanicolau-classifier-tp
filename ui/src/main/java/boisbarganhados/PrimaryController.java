@@ -93,6 +93,7 @@ public class PrimaryController {
     private Slider brightnessSlider;
     private Slider sharpnessSlider;
     private ContextMenu contextMenu;
+    private File lastDirectory;
 
     @FXML
     private StackPane primaryContainer;
@@ -695,9 +696,10 @@ public class PrimaryController {
         fileChooser.setTitle("Abrir imagem");
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Imagens", "*.png", "*.jpg", "*.jpeg"));
-
+        fileChooser.setInitialDirectory(lastDirectory != null ? lastDirectory : null);
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
+            lastDirectory = file.getParentFile();
             Image image = new Image(file.toURI().toString());
             imageView.setImage(image);
             resetImageZoom();
@@ -1063,7 +1065,6 @@ public class PrimaryController {
             var urlFile = image.getUrl();
             path += urlFile != null ? urlFile.substring(image.getUrl().lastIndexOf("/") + 1)
                     : "image_process" + UUID.randomUUID() + ".png";
-            System.out.println(path);
             var file = new File(path);
             ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
             var pathRef = path;

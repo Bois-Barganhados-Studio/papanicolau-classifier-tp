@@ -52,7 +52,7 @@ public class FourierChartController {
   }
 
   private XYChart.Series<Number, Number> updateChart() {
-    lineChart.setTitle("Fourier Spectrum");
+    lineChart.setTitle("Fourier Spectrum (Magnitude)");
 
     XYChart.Series<Number, Number> series = new XYChart.Series<>();
     series.setName("Magnitude Spectrum");
@@ -66,8 +66,11 @@ public class FourierChartController {
 
       data = Utils.matTo2DArray(spectrumMat);
 
-      for (int i = 0; i < rows; i += 25) {
-        for (int j = 0; j < cols; j += 8) {
+      var passRow = rows < 100 ? 1 : rows < 2000?  rows / 100 : rows / 200;
+      var passCol = cols < 100 ? 1 : cols < 2000?  cols / 100 : cols / 200;
+
+      for (int i = 0; i < rows; i += passRow) {
+        for (int j = 0; j < cols; j += passCol) {
           series.getData().add(new XYChart.Data<>(i, data[i][j]));
         }
       }

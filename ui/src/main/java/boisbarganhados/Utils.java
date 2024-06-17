@@ -133,7 +133,6 @@ public final class Utils {
         return histogram;
     }
 
-
     public static Mat threshold(Mat image, int threshold) {
         Mat thresholded = new Mat();
         if (image.channels() == 4) {
@@ -187,10 +186,10 @@ public final class Utils {
         if (image.channels() == 4) {
             opencv_imgproc.cvtColor(image, image, opencv_imgproc.COLOR_BGRA2BGR);
         }
-    
+
         // Change the brightness by adding beta to all pixel values
         image.convertTo(brightened, -1, 1, beta);
-    
+
         return brightened;
     }
 
@@ -218,18 +217,17 @@ public final class Utils {
     public static Mat sharpness(Mat image, double alpha) {
         Mat blurred = new Mat();
         Mat sharpened = new Mat();
-    
+
         if (image.channels() == 4) {
             opencv_imgproc.cvtColor(image, image, opencv_imgproc.COLOR_BGRA2BGR);
         }
-    
+
         opencv_imgproc.GaussianBlur(image, blurred, new Size(0, 0), 10);
-    
+
         opencv_core.addWeighted(image, 1 + alpha, blurred, -alpha, 0.0, sharpened);
-    
+
         return sharpened;
     }
-    
 
     public static Mat colorFilter(Mat image, Color color) {
         Mat filteredImage = new Mat();
@@ -366,7 +364,7 @@ public final class Utils {
         MatVector planes = new MatVector(new Mat(padded.size(), opencv_core.CV_32F),
                 new Mat(padded.size(), opencv_core.CV_32F));
         padded.convertTo(planes.get(0), opencv_core.CV_32F);
-        planes.get(1).zeros(padded.size(), opencv_core.CV_32F);
+        planes.put(1, Mat.zeros(padded.size(), opencv_core.CV_32F).asMat());
         opencv_core.merge(planes, complexImage);
         opencv_core.dft(complexImage, complexImage);
         shiftDFT(complexImage);
@@ -431,54 +429,37 @@ public final class Utils {
         if (image.channels() == 4) {
             cvtColor(image, image, COLOR_BGRA2BGR);
         }
-        // Convert image to grayscale
         Mat gray = new Mat();
         cvtColor(image, gray, COLOR_BGR2GRAY);
-
-        // Expand the image to optimal size for DFT
         Mat padded = new Mat();
         int m = opencv_core.getOptimalDFTSize(gray.rows());
         int n = opencv_core.getOptimalDFTSize(gray.cols());
         opencv_core.copyMakeBorder(gray, padded, 0, m - gray.rows(), 0, n - gray.cols(), opencv_core.BORDER_CONSTANT,
                 Scalar.all(0));
-
-        // Create optimal size complex planes to store DFT results
         Mat complexImage = new Mat();
         MatVector planes = new MatVector(new Mat(padded.size(), opencv_core.CV_64F),
                 new Mat(padded.size(), opencv_core.CV_64F));
         padded.convertTo(planes.get(0), opencv_core.CV_64F);
-        planes.get(1).zeros(padded.size(), opencv_core.CV_64F);
+        planes.put(1, Mat.zeros(padded.size(), opencv_core.CV_64F).asMat());
         opencv_core.merge(planes, complexImage);
-
-        // Perform DFT
         opencv_core.dft(complexImage, complexImage);
-
-        // Shift the quadrants of the Fourier image to bring the low frequency
-        // components to the center
         shiftDFT(complexImage);
-
-        // Split the complex image into real and imaginary parts
         MatVector newPlanes = new MatVector();
         opencv_core.split(complexImage, newPlanes);
         Mat mag = new Mat();
         opencv_core.magnitude(planes.get(0), planes.get(1), mag);
-
-        // Switch to logarithmic scale
         var s = Scalar.all(1);
         Mat exp = new Mat(mag.size(), mag.type(), s);
         opencv_core.add(exp, mag, mag);
         opencv_core.log(mag, mag);
-
-        // Normalize to the range [0, 1] for visualization
         opencv_core.normalize(mag, mag, 0, 1, opencv_core.NORM_MINMAX, -1, new Mat());
-
         return mag;
     }
 
     public static double[][] matTo2DArray(Mat mat) {
         int rows = mat.rows();
         int cols = mat.cols();
-       double[][] data = new double[rows][cols];
+        double[][] data = new double[rows][cols];
         var indexer = ((DoubleRawIndexer) mat.createIndexer());
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
