@@ -125,7 +125,7 @@
                   <FontIcon iconLiteral="mdoal-description" iconSize="24" />
                </graphic>
             </Button>
-            <Button text="Descritores de Haralick">
+            <Button text="Descritores de Haralick" onAction="#runHaralick">
                <graphic>
                   <FontIcon iconLiteral="mdoal-format_list_numbered" iconSize="24" />
                </graphic>

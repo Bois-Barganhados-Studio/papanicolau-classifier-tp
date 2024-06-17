@@ -1,3 +1,6 @@
 numpy
 tensorflow
 keras
+scikit-image
+torch
+torchvision

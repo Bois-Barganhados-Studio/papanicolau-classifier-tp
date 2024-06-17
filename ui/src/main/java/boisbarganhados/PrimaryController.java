@@ -14,6 +14,7 @@ import atlantafx.base.controls.Tile;
 import atlantafx.base.theme.Styles;
 import atlantafx.base.util.Animations;
 import boisbarganhados.python_layer.Classifier;
+import boisbarganhados.python_layer.Haralick;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.concurrent.Service;
@@ -1108,6 +1109,71 @@ public class PrimaryController {
                 text1.setMaxWidth(260);
                 card1.setBody(text1);
                 showModal(card1, 400, 300);
+            });
+            task.onFailedProperty().set(event -> {
+                enableUi(true);
+                showNotification("Erro", "Ocorreu um erro durante o processamento.", Styles.DANGER);
+            });
+            service.start();
+        } catch (IOException e) {
+            throw e;
+        }
+    }
+
+    @FXML 
+    public void runHaralick() throws Exception {
+        var image = imageView.getImage();
+        if (image == null) {
+            return;
+        }
+        try {
+            var path = Classifier.IMAGES_PY_CLASSIFIER_TMP;
+            var urlFile = image.getUrl();
+            path += urlFile != null ? urlFile.substring(image.getUrl().lastIndexOf("/") + 1)
+                    : "image_process" + UUID.randomUUID() + ".png";
+            var file = new File(path);
+            ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
+            var pathRef = path;
+            Task<List<String>> task = new Task<>() {
+                @Override
+                protected List<String> call() throws Exception {
+                    var result = Haralick.runHaralick(pathRef);
+                    return result;
+                }
+            };
+            Service<List<String>> service = new Service<>() {
+                @Override
+                protected Task<List<String>> createTask() {
+                    enableUi(false);
+                    progressBar.setVisible(true);
+                    progressBar.progressProperty().bind(task.progressProperty());
+                    return task;
+                }
+            };
+            task.onSucceededProperty().set(event -> {
+                enableUi(true);
+                var result = task.getValue();
+                var card1 = new Card();
+                card1.getStyleClass().add(Styles.ELEVATED_2);
+                card1.setMinWidth(300);
+                card1.setMaxWidth(300);
+                card1.setMaxHeight(300);
+                var header1 = new Tile("Descritores de Haralick", "Resultado dos descritores de haralick da imagem.");
+                card1.setHeader(header1);
+                var text1 = new TextFlow(new Text("\n\n" + "Descritores de haralick para matriz de coocorrência de níveis de cinza: \n\n"));
+                var printStart = false;
+                for (var r : result) {
+                    if (printStart)
+                        text1.getChildren().add(new Text(r + "\n"));
+                    else {
+                        printStart = r.contains("Haralick para [1, 2 ,4, 8, 16, 32]");
+                        if (printStart)
+                            text1.getChildren().add(new Text("Haralick para [1, 2 ,4, 8, 16, 32]" + "\n"));
+                    }
+                }
+                text1.setMaxWidth(260);
+                card1.setBody(text1);
+                showModal(card1, 400, 200);
             });
             task.onFailedProperty().set(event -> {
                 enableUi(true);
