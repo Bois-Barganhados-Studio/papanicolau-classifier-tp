@@ -35,6 +35,12 @@ public final class Utils {
     public static int HIST_SIZE = 256;
     public static float[] RANGE = new float[] { 0.0f, 255.0f };
 
+    /**
+     * Convert a Mat object to a BufferedImage
+     * 
+     * @param image Mat object to be converted
+     * @return BufferedImage with the Mat data
+     */
     public static Mat image2Mat(BufferedImage image) {
         byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
         Mat mat = new Mat(image.getHeight(), image.getWidth(), org.bytedeco.opencv.global.opencv_core.CV_8UC3);
@@ -42,6 +48,12 @@ public final class Utils {
         return mat;
     }
 
+    /**
+     * Convert a BufferedImage to a Mat object
+     * 
+     * @param frame BufferedImage to be converted
+     * @return Mat object with the BufferedImage data
+     */
     public BufferedImage matToBufferedImage(Mat frame) {
         int type = 0;
         if (frame.channels() == 1) {
@@ -57,6 +69,12 @@ public final class Utils {
         return image;
     }
 
+    /**
+     * Convert a Mat object to a JavaFX Image
+     * 
+     * @param mat Mat object to be converted
+     * @return JavaFX Image with the Mat data
+     */
     public static Mat toMat(Image image) {
         int width = (int) image.getWidth();
         int height = (int) image.getHeight();
@@ -70,6 +88,12 @@ public final class Utils {
         return mat;
     }
 
+    /**
+     * Convert a JavaFX Image to a BufferedImage
+     * 
+     * @param image JavaFX Image to be converted
+     * @return BufferedImage with the JavaFX Image data
+     */
     public static Image bufferedImageToJavafxImage(BufferedImage bufferedImage) throws IllegalArgumentException {
         if (bufferedImage == null) {
             throw new IllegalArgumentException("bufferedImage is null");
@@ -77,6 +101,12 @@ public final class Utils {
         return SwingFXUtils.toFXImage(bufferedImage, null);
     }
 
+    /**
+     * Save an image to a file
+     * 
+     * @param image Image to be saved
+     * @param name  Name of the file
+     */
     public static void saveImage(BufferedImage image, String name) {
         try {
             File outputfile = new File(name);
@@ -86,6 +116,12 @@ public final class Utils {
         }
     }
 
+    /**
+     * Calculate the histogram of an image
+     * 
+     * @param mat Image to calculate the histogram
+     * @return Array with the histogram values
+     */
     public static float[] hist(Mat mat, int histSize, float[] range) {
         Mat hist = new Mat();
         var images = new MatVector(mat);
@@ -104,8 +140,13 @@ public final class Utils {
         return histogram;
     }
 
-    // Function to calculate 2D HSV histogram with quantization of 16 values for H
-    // and 8 values for V
+    /**
+     * Calculate the histogram of the Hue and Value channels of an image in the HSV
+     * 
+     * @param mat   Image in BGR format
+     * @param hBins Number of bins for the Hue channel
+     * @return 2D array with the histogram values
+     */
     public static float[][] hsvHist(Mat mat, Integer hBins) {
         int vBins = 8;
         float[] hRange = { 0, 180 }; // H channel range for HSV
@@ -133,6 +174,13 @@ public final class Utils {
         return histogram;
     }
 
+    /**
+     * Do a threshold operation on an image
+     * 
+     * @param image     Image to be thresholded
+     * @param threshold Threshold value
+     * @return Thresholded image
+     */
     public static Mat threshold(Mat image, int threshold) {
         Mat thresholded = new Mat();
         if (image.channels() == 4) {
@@ -142,6 +190,12 @@ public final class Utils {
         return thresholded;
     }
 
+    /**
+     * Invert the colors of an image
+     * 
+     * @param image Image to be inverted
+     * @return Inverted image
+     */
     public static Mat invert(Mat image) {
         Mat inverted = new Mat();
         if (image.channels() == 4) {
@@ -151,6 +205,14 @@ public final class Utils {
         return inverted;
     }
 
+    /**
+     * Apply a contrast adjustment to an image
+     * 
+     * @param image Image to be adjusted
+     * @param alpha Contrast factor
+     * @param beta  Brightness factor
+     * @return Adjusted image
+     */
     public static Mat contrast(Mat image, double alpha, int beta) {
         Mat contrasted = new Mat();
         if (image.channels() == 4) {
@@ -160,6 +222,13 @@ public final class Utils {
         return contrasted;
     }
 
+    /**
+     * Apply a gamma correction to an image
+     * 
+     * @param image Image to be corrected
+     * @param gamma Gamma value
+     * @return Corrected image
+     */
     public static Mat saturate(Mat image, double alpha) {
         Mat saturated = new Mat();
         if (image.channels() == 4) {
@@ -181,18 +250,29 @@ public final class Utils {
         return saturatedImage;
     }
 
+    /**
+     * Apply a brightness adjustment to an image
+     * 
+     * @param image Image to be adjusted
+     * @param beta  Brightness factor
+     * @return Adjusted image
+     */
     public static Mat brightness(Mat image, double beta) {
         Mat brightened = new Mat();
         if (image.channels() == 4) {
             opencv_imgproc.cvtColor(image, image, opencv_imgproc.COLOR_BGRA2BGR);
         }
-
-        // Change the brightness by adding beta to all pixel values
         image.convertTo(brightened, -1, 1, beta);
-
         return brightened;
     }
 
+    /**
+     * Apply a hue adjustment to an image
+     * 
+     * @param image Image to be adjusted
+     * @param shift Hue shift value
+     * @return Adjusted image
+     */
     public static Mat hue(Mat image, double shift) {
         Mat hsvImage = new Mat();
         if (image.channels() == 4) {
@@ -214,6 +294,13 @@ public final class Utils {
         return hueAdjusted;
     }
 
+    /**
+     * Apply a sharpness filter to an image
+     * 
+     * @param image Image to be sharpened
+     * @param alpha Sharpness factor
+     * @return Sharpened image
+     */
     public static Mat sharpness(Mat image, double alpha) {
         Mat blurred = new Mat();
         Mat sharpened = new Mat();
@@ -229,6 +316,13 @@ public final class Utils {
         return sharpened;
     }
 
+    /**
+     * Apply a blur filter to an image
+     * 
+     * @param image      Image to be blurred
+     * @param kernelSize Kernel size for the blur filter
+     * @return Blurred image
+     */
     public static Mat colorFilter(Mat image, Color color) {
         Mat filteredImage = new Mat();
         if (image.channels() == 4) {
@@ -264,6 +358,13 @@ public final class Utils {
         return filteredImage;
     }
 
+    /**
+     * Apply a blur filter to an image
+     * 
+     * @param image      Image to be blurred
+     * @param kernelSize Kernel size for the blur filter
+     * @return Blurred image
+     */
     public static double[] getAllHuMoments(Mat image) {
         if (image.channels() == 4) {
             cvtColor(image, image, COLOR_BGRA2BGR);
@@ -285,6 +386,12 @@ public final class Utils {
         return hu;
     }
 
+    /**
+     * Calculate the Hu moments of an image
+     * 
+     * @param mat Image to calculate the moments
+     * @return Array with the 7 Hu moments
+     */
     public static double[] calculateHuMoments(Mat mat) {
         Mat binMat = new Mat();
         opencv_imgproc.threshold(mat, binMat, 0, 255, opencv_imgproc.THRESH_BINARY);
@@ -299,6 +406,13 @@ public final class Utils {
         return huMoments;
     }
 
+    /**
+     * Calculate the co-occurrence matrices of an image
+     * 
+     * @param mat       Image to calculate the matrices
+     * @param distances Distances to calculate the matrices
+     * @return Map with the calculated matrices
+     */
     public static Map<Integer, int[][]> calculateCoOccurrenceMatrices(Mat mat, int[] distances) {
         // Convert image to grayscale
         Mat grayMat = new Mat();
@@ -349,6 +463,14 @@ public final class Utils {
         return coOccurrenceMatrices;
     }
 
+    /**
+     * Apply a Fourier filter to an image
+     * 
+     * @param image   Image to be filtered
+     * @param cutFreq Cutoff frequency
+     * @param pass    True for high-pass filter, false for low-pass filter
+     * @return Filtered image
+     */
     public static Mat applyFourierFilter(Mat image, float cutFreq, boolean pass) {
         if (image.channels() == 4) {
             cvtColor(image, image, COLOR_BGRA2BGR);
@@ -387,6 +509,11 @@ public final class Utils {
         return result;
     }
 
+    /**
+     * Shift the DFT to the center
+     * 
+     * @param image Image to be shifted
+     */
     private static void shiftDFT(Mat image) {
         int cx = image.cols() / 2;
         int cy = image.rows() / 2;
@@ -403,6 +530,12 @@ public final class Utils {
         tmp.copyTo(q2);
     }
 
+    /**
+     * Create a low-pass filter mask
+     * 
+     * @param mask            Mask to be created
+     * @param cutoffFrequency Cutoff frequency
+     */
     private static void createLowPassFilter(Mat mask, float cutoffFrequency) {
         int rows = mask.rows();
         int cols = mask.cols();
@@ -414,6 +547,12 @@ public final class Utils {
         }
     }
 
+    /**
+     * Create a high-pass filter mask
+     * 
+     * @param mask            Mask to be created
+     * @param cutoffFrequency Cutoff frequency
+     */
     private static void createHighPassFilter(Mat mask, float cutoffFrequency) {
         int rows = mask.rows();
         int cols = mask.cols();
@@ -425,6 +564,12 @@ public final class Utils {
         }
     }
 
+    /**
+     * Get the Fourier spectrum of an image
+     * 
+     * @param image Image to get the spectrum
+     * @return Fourier spectrum of the image
+     */
     public static Mat getFourierSpectrum(Mat image) {
         if (image.channels() == 4) {
             cvtColor(image, image, COLOR_BGRA2BGR);
@@ -456,6 +601,12 @@ public final class Utils {
         return mag;
     }
 
+    /**
+     * Convert a Mat object to a 2D array
+     * 
+     * @param mat Mat object to be converted
+     * @return 2D array with the Mat data
+     */
     public static double[][] matTo2DArray(Mat mat) {
         int rows = mat.rows();
         int cols = mat.cols();
