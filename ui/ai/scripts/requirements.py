@@ -23,9 +23,9 @@ if __name__ == "__main__":
     # Install requirements
     install_requirements(sys.argv[1])
 
-    # Import installed packages
-    install_and_import('numpy')
-    install_and_import('torch')
-    install_and_import('torchvision')
-    install_and_import('skimage.feature')
+    # # Import installed packages
+    # install_and_import('numpy')
+    # install_and_import('torch')
+    # install_and_import('torchvision')
+    # install_and_import('skimage.feature')
 
