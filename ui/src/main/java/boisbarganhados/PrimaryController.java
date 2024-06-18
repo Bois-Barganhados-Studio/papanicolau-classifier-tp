@@ -946,7 +946,6 @@ public class PrimaryController {
             return;
         }
         var mat = Utils.toMat(image);
-        System.out.println(HSVHistogramSpinner.getValue());
         var histogram = Utils.hsvHist(mat, HSVHistogramSpinner.getValue());
         try {
             var loader = App.loadFXML("hsvHistogram");

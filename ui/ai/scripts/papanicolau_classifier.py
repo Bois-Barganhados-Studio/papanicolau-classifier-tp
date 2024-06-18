@@ -9,6 +9,7 @@ from torchvision import transforms
 from PIL import Image
 from skimage.feature import graycomatrix, graycoprops
 import joblib
+import time
 
 efficient_net_binary_path = 'efficientNet_cpu_bin.pth'
 efficient_net_multiclass_path = 'efficientNet_cpu_multiclass.pth'
@@ -147,14 +148,26 @@ def svm_multiclass_predict(img_path, models_path):
     return prediction.item()
 
 def main(image_path, models_path):
-    
+    startTimePred1 = time.time()
     predEf = binary_predict(image_path, models_path)
-    
+    endTimePred1 = time.time()
+    startTimePred2 = time.time()
     predMultiEf = multiclass_predict(image_path,models_path, predEf)
-    
+    endTimePred2 = time.time()
+    startTimePred3 = time.time()
     svmPred = svm_binary_predict(image_path, models_path)
-    
+    endTimePred3 = time.time()
+    startTimePred4 = time.time()
     svmMultiPred = svm_multiclass_predict(image_path, models_path)
+    endTimePred4 = time.time()
+
+    #print(f"Prediction time: {endTimePred - startTimePred:.2f}s")
+
+    #print all
+    print(f"Prediction time EfficientNet Binary: {endTimePred1 - startTimePred1:.2f}s" )
+    print(f"Prediction time EfficientNet Multiclass: {endTimePred2 - startTimePred2:.2f}s" )
+    print(f"Prediction time SVM Binary: {endTimePred3 - startTimePred3:.2f}s" )
+    print(f"Prediction time SVM Multiclass: {endTimePred4 - startTimePred4:.2f}s" )
 
     # Process binary predictions
     print("Binary Classifier Results:\n")

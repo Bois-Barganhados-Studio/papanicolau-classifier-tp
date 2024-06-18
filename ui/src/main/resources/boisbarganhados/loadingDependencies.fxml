@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.collections.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.control.Separator?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+  xmlns:fx="http://javafx.com/fxml"
+  fx:controller="boisbarganhados.DependenciesLoadingController"
+>
+  <top>
+    <VBox
+      alignment="CENTER" spacing="10.0">
+      <TextFlow textAlignment="CENTER"
+        style="-fx-text-alignment: center; -fx-font-size: 24px; -fx-font-weight: bold;">
+        <children>
+          <Text text="Baixando e carregando dependências..." />
+        </children>
+      </TextFlow>
+    </VBox>
+  </top>
+  <center>
+    <ProgressBar fx:id="progressBar" progress="0.0" visible="true" prefWidth="200" prefHeight="200" />
+  </center>
+  <bottom>
+    <VBox
+      alignment="CENTER" spacing="10.0">
+      <TextFlow textAlignment="CENTER"
+        style="-fx-text-alignment: center; -fx-font-size: 18px; -fx-font-weight: bold;">
+        <children>
+          <Text text="Visualizador e classificador de imagens de exame Papanicolau" />
+        </children>
+      </TextFlow>
+      <Separator orientation="HORIZONTAL" />
+      <children>
+        <Text text="Carregando! Isso pode demorar um pouco." />
+      </children>
+    </VBox>
+  </bottom>
+</BorderPane>
