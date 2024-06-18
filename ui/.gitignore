@@ -3,3 +3,6 @@ target/
 
 # Ignore Visual Studio Code
 .vscode/
+
+# Ignore temp imgs
+imgs_temp/
