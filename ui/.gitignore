@@ -4,4 +4,7 @@ target/
 # Ignore Visual Studio Code
 .vscode/
 
+# Ignore imgs_temp inner files
+ai/imgs_temp/*
+
 *.jar

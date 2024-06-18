@@ -70,7 +70,7 @@ public class App extends Application {
         stage.close();
         stage = new Stage();
         FXMLLoader loader = loadFXML("primary");
-        scene = new Scene(loader.load(), 800, 600);
+        scene = new Scene(loader.load(), 1200, 800);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         scene.setFill(Color.TRANSPARENT);
         PrimaryController controller = loader.getController();
