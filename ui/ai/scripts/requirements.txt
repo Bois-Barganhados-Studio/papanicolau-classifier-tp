@@ -1,5 +1,6 @@
-numpy
+numpy<2
 scikit-image
+scikit-learn
 joblib
 torch
 torchvision
