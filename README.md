@@ -31,13 +31,13 @@ Para executar a aplicação apenas clique no executável ou execute em um termin
 ```bash
   # Na pasta Root do programa
   cd ui
-  mvn clean jfx:run
+  mvn clean javafx:run
 
 ```
 
 Para compilar o código e buildar a aplicação execute o seguinte em um terminal
 ```bash
-   mvn clean jfx:run
+   mvn clean javafx:run
 ``` 
 
 Para gerar um executavel (testado apenas com windows)
