@@ -16,7 +16,7 @@ efficient_net_multiclass_path = 'efficientNet_cpu_multiclass.pth'
 svm_binary_path = 'binary_svm_classifier.pkl'
 svm_multi_path = 'multiclass_svm_classifier.pkl'
 binary_class_names = ['Negative', 'Positive']
-multiclass_class_names = ['ASC-H', 'ASC-US', 'HSIL', 'LSIL', 'Negative_for_intraepithelial_lesion', 'SCC']
+multiclass_class_names = ['ASC-H', 'ASC-US', 'HSIL', 'LSIL','SCC']
 
 def quantize_image(image, levels = 16):
     grayscale_image = image.convert("L")
