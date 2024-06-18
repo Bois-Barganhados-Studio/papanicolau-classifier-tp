@@ -3,3 +3,5 @@ target/
 
 # Ignore Visual Studio Code
 .vscode/
+
+*.jar
