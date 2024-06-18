@@ -29,22 +29,19 @@ Folder with the user interface scripts and the main script to run the system.
 Para executar a aplicação apenas clique no executável ou execute em um terminal:
 
 ```bash
-  # Na pasta Root do programa
-  cd ui
-  mvn clean javafx:run
-
+  ./mvnw clean javafx:run
 ```
 
 Para compilar o código e buildar a aplicação execute o seguinte em um terminal
 ```bash
-   mvn clean javafx:run
+   ./mvnw clean javafx:run
 ``` 
 
 Para gerar um executavel (testado apenas com windows)
 ```bash
-   mvn clean
-   mvn compile
-   mvn package
+   ./mvnw clean
+   ./mvnw compile
+   ./mvnw package
 ``` 
 
 ## Autores
