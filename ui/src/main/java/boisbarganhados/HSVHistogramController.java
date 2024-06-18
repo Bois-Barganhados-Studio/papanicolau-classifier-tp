@@ -15,6 +15,9 @@ public class HSVHistogramController {
   public void start() {
     // Function to calculate 2D HSV histogram with quantization of 16 values for H
     // and 8 values for V
+    System.out.println("Calculating HSV histogram...");
+    System.out.println(histogram.length);
+
     XYChart.Series<String, Number> dataSeries = new XYChart.Series<>();
     for (int h = 0; h < histogram.length; h++) {
       for (int v = 0; v < histogram[h].length; v++) {

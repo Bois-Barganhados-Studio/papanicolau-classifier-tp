@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import sys
 from skimage.feature import graycomatrix, graycoprops
 from PIL import Image

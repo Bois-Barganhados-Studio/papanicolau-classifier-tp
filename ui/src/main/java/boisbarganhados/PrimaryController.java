@@ -948,6 +948,7 @@ public class PrimaryController {
             return;
         }
         var mat = Utils.toMat(image);
+        System.out.println(HSVHistogramSpinner.getValue());
         var histogram = Utils.hsvHist(mat, HSVHistogramSpinner.getValue());
         try {
             var loader = App.loadFXML("hsvHistogram");
@@ -1103,7 +1104,7 @@ public class PrimaryController {
                     else {
                         printStart = r.contains("Binary Classifier Results:");
                         if (printStart)
-                            text1.getChildren().add(new Text("Binary Classifier Results:" + "\n"));
+                            text1.getChildren().add(new Text("Binary Classifier Results:"));
                     }
                 }
                 text1.setMaxWidth(260);
