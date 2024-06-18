@@ -21,22 +21,30 @@ Folder with the user interface scripts and the main script to run the system.
 
 ## Execução
 
+### Na pasta Root do programa
+```bash
+   cd ui
+```
+
 Para executar a aplicação apenas clique no executável ou execute em um terminal:
 
 ```bash
   # Na pasta Root do programa
-java -jar papanicolau_1.0.jar
+  cd ui
+  mvn clean jfx:run
 
 ```
 
 Para compilar o código e buildar a aplicação execute o seguinte em um terminal
 ```bash
-  # Na pasta Root do programa
-   cd src 
-  .\mvnw clean
-  .\mvnw compile
-  .\mvnw build
-  .\mvnw package
+   mvn clean jfx:run
+``` 
+
+Para gerar um executavel (testado apenas com windows)
+```bash
+   mvn clean
+   mvn compile
+   mvn package
 ``` 
 
 ## Autores
