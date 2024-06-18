@@ -339,16 +339,15 @@ public class PrimaryController {
     @FXML
     public void openAboutDialog() {
 
-        var card1 = new Card();
-        card1.getStyleClass().add(Styles.ELEVATED_2);
-        card1.setMinWidth(300);
-        card1.setMaxWidth(300);
-        card1.setMaxHeight(300);
+        var borderPane = new BorderPane();
+        borderPane.setMinWidth(300);
+        borderPane.setMaxWidth(300);
+        borderPane.setMaxHeight(300);
 
         var header1 = new Tile(
                 "Trabalho Prático 1 - Papanicolau",
                 "Analisa e classificação de imagens de Papanicolau com técnicas de processamento de imagens.");
-        card1.setHeader(header1);
+        borderPane.setTop(header1);
 
         var text1 = new TextFlow(new Text("\n\n" +
                 "Desenvolvido por:\n" +
@@ -360,9 +359,9 @@ public class PrimaryController {
                 "PUC Minas - Praça da Liberdade\n" +
                 "2024/1"));
         text1.setMaxWidth(260);
-        card1.setBody(text1);
+        borderPane.setCenter(text1);
 
-        showModal(card1, 300, 300);
+        showModal(borderPane, 300, 300);
     }
 
     @FXML
@@ -418,12 +417,13 @@ public class PrimaryController {
     }
 
     private void showModal(Node node, double width, double height) {
+        Card card = new Card();
+        card.setPrefWidth(width);
+        card.setPrefHeight(height);
+        card.setMaxWidth(width);
+        card.setMaxHeight(height);
+        card.getStyleClass().add(Styles.ELEVATED_2);
         BorderPane borderPane = new BorderPane();
-        borderPane.setPrefWidth(width);
-        borderPane.setPrefHeight(height);
-        borderPane.setMaxWidth(width);
-        borderPane.setMaxHeight(height);
-        borderPane.setStyle("-fx-background-color: -color-bg-default; -fx-border-radius: 4px;");
         Button closeButton = new Button();
         closeButton.getStyleClass().addAll(Styles.FLAT, Styles.BUTTON_ICON);
         closeButton.setOnAction(event -> modalPane.hide());
@@ -448,7 +448,9 @@ public class PrimaryController {
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         borderPane.setTop(buttonBox);
         borderPane.setCenter(node);
-        modalPane.show(borderPane);
+
+        card.setBody(borderPane);
+        modalPane.show(card);
     }
 
     private void showDialog(Node node) {
@@ -1014,7 +1016,7 @@ public class PrimaryController {
         var mat = Utils.toMat(image);
         var huMoments = Utils.getAllHuMoments(mat);
         try {
-            Card card1 = new Card();
+            BorderPane borderPane = new BorderPane();
             var textx = "Hu Moments\nMomentos invariantes de Hu para a imagem em 256 tons de cinza e para os 3 canais\r\n"
                     + "originais do modelo HSV (4*7 características)";
             var textFlow = new TextFlow(new Text(textx));
@@ -1046,10 +1048,9 @@ public class PrimaryController {
             vbox.getChildren().add(accordion);
             ScrollPane scrollPane = new ScrollPane(vbox);
             scrollPane.setFitToWidth(true);
-            card1.setBody(scrollPane);
-            card1.getStyleClass().add(Styles.ELEVATED_2);
-            card1.setMinWidth(300);
-            showModal(card1, 450, 450);
+            borderPane.setCenter(scrollPane);
+            borderPane.setMinWidth(300);
+            showModal(borderPane, 450, 450);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1088,13 +1089,12 @@ public class PrimaryController {
             task.onSucceededProperty().set(event -> {
                 enableUi(true);
                 var result = task.getValue();
-                var card1 = new Card();
-                card1.getStyleClass().add(Styles.ELEVATED_2);
-                card1.setMinWidth(300);
-                card1.setMaxWidth(300);
-                card1.setMaxHeight(300);
+                var borderPane = new BorderPane();
+                borderPane.setMinWidth(300);
+                borderPane.setMaxWidth(300);
+                borderPane.setMaxHeight(300);
                 var header1 = new Tile("Resultado da classificação", "Resultado da classificação da imagem utilizando modelos pré treinados (SVM e EfficientNet).");
-                card1.setHeader(header1);
+                borderPane.setTop(header1);
                 var text1 = new TextFlow(new Text("\n\n" + "Resultados para Binário e Multiclass:\n"));
                 var printStart = false;
                 for (var r : result) {
@@ -1107,8 +1107,8 @@ public class PrimaryController {
                     }
                 }
                 text1.setMaxWidth(260);
-                card1.setBody(text1);
-                showModal(card1, 400, 300);
+                borderPane.setCenter(text1);
+                showModal(borderPane, 400, 300);
             });
             task.onFailedProperty().set(event -> {
                 enableUi(true);
@@ -1153,13 +1153,12 @@ public class PrimaryController {
             task.onSucceededProperty().set(event -> {
                 enableUi(true);
                 var result = task.getValue();
-                var card1 = new Card();
-                card1.getStyleClass().add(Styles.ELEVATED_2);
-                card1.setMinWidth(300);
-                card1.setMaxWidth(300);
-                card1.setMaxHeight(300);
+                var borderPane = new BorderPane();
+                borderPane.setMinWidth(300);
+                borderPane.setMaxWidth(300);
+                borderPane.setMaxHeight(300);
                 var header1 = new Tile("Descritores de Haralick", "Resultado dos descritores de haralick da imagem.");
-                card1.setHeader(header1);
+                borderPane.setTop(header1);
                 var text1 = new TextFlow(new Text("\n\n" + "Descritores de haralick para matriz de coocorrência de níveis de cinza: \n\n"));
                 var printStart = false;
                 for (var r : result) {
@@ -1172,8 +1171,8 @@ public class PrimaryController {
                     }
                 }
                 text1.setMaxWidth(260);
-                card1.setBody(text1);
-                showModal(card1, 400, 200);
+                borderPane.setCenter(text1);
+                showModal(borderPane, 400, 200);
             });
             task.onFailedProperty().set(event -> {
                 enableUi(true);

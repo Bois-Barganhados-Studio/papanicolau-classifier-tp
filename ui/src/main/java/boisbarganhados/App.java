@@ -20,7 +20,7 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
         FXMLLoader loader = loadFXML("primary");
-        scene = new Scene(loader.load(), 800, 600);
+        scene = new Scene(loader.load(), 1200, 800);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         scene.setFill(Color.TRANSPARENT);
         PrimaryController controller = loader.getController();
