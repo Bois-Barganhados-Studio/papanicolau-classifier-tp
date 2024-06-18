@@ -25,11 +25,11 @@
     </VBox>
   </top>
   <center>
-    <ProgressBar fx:id="progressBar" progress="0.0" visible="true" prefWidth="200" prefHeight="200" />
+    <ProgressBar fx:id="progressBar" progress="0.0" visible="true" prefWidth="500" prefHeight="70" />
   </center>
   <bottom>
     <VBox
-      alignment="CENTER" spacing="10.0">
+      alignment="CENTER" spacing="10.0" prefHeight="70" VBox.vgrow="ALWAYS">
       <TextFlow textAlignment="CENTER"
         style="-fx-text-alignment: center; -fx-font-size: 18px; -fx-font-weight: bold;">
         <children>
