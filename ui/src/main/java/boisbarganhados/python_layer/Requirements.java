@@ -3,7 +3,7 @@ package boisbarganhados.python_layer;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public final class Requirements {
+public final class Requirements extends ConnectionLayer{
 
     private static final String REQUIREMENTS_PATH = "ai/scripts/requirements.py";
 
@@ -11,7 +11,7 @@ public final class Requirements {
         var status = false;
         try {
             var requirementsPath = REQUIREMENTS_PATH;
-            String[] command = new String[] { "python", requirementsPath, requirementsPath.replace("requirements.py", "requirements.txt") };
+            String[] command = new String[] { getPythonCommand(), requirementsPath, requirementsPath.replace("requirements.py", "requirements.txt") };
             ProcessBuilder pb = new ProcessBuilder(command);
             Process process = pb.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));

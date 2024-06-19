@@ -2,15 +2,24 @@ package boisbarganhados;
 
 import java.io.IOException;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import atlantafx.base.controls.Card;
+import atlantafx.base.theme.Styles;
 import boisbarganhados.python_layer.Requirements;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import lombok.Data;
 
@@ -30,7 +39,8 @@ public class DependenciesLoadingController {
             protected Void call() {
                 if (!Requirements.loadRequirements()) {
                     System.err.println("Failed to load requirements");
-                    System.exit(1);
+                    throw new RuntimeException(
+                            "Internal Failure (Python could not install dependencies with PIP install). See logs (cli) for more information.");
                 }
                 return null;
             }
@@ -47,8 +57,35 @@ public class DependenciesLoadingController {
         });
 
         taskMain.setOnFailed(e -> {
-            System.err.println("Failed to load requirements");
-            System.exit(1);
+            var node = new BorderPane();
+            var textFlow = new TextFlow();
+            node.setPrefWidth(400);
+            node.setPrefHeight(400);
+            textFlow.getChildren()
+                    .add(new Text("Failed to load dependencies. Please check the logs for more information. \nError: "
+                            + e.getSource().getException().getMessage()));
+            node.setCenter(textFlow);
+            FontIcon errorIcon = new FontIcon("mdoal-error");
+            errorIcon.setIconSize(50);
+            errorIcon.setIconColor(Color.RED);
+            node.setLeft(errorIcon);
+            Card card = new Card();
+            card.setPrefWidth(400);
+            card.setPrefHeight(300);
+            card.setMaxWidth(450);
+            card.setMaxHeight(400);
+            card.getStyleClass().add(Styles.ELEVATED_2);
+            card.setBody(node);
+            Dialog<Void> dialog = new Dialog<Void>();
+            dialog.getDialogPane().setContent(card);
+            dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+            dialog.setTitle("Dependencies install error");
+            dialog.initOwner(stage);
+            dialog.initStyle(javafx.stage.StageStyle.UTILITY);
+            dialog.setOnCloseRequest(ev -> {
+                System.exit(0);
+            });
+            dialog.showAndWait();
         });
 
         Service<Void> service = new Service<>() {

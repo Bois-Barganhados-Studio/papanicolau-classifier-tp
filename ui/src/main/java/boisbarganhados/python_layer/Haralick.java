@@ -5,15 +5,14 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class Haralick {
-
+public final class Haralick extends ConnectionLayer {
 
     private static final String HARALICK_SCRIPT_PATH = "ai/scripts/haralick.py";
 
     public static List<String> runHaralick(String imagePath) {
         var result = new ArrayList<String>();
         try {
-            String[] command = new String[] { "python",HARALICK_SCRIPT_PATH, imagePath};
+            String[] command = new String[] { getPythonCommand(), HARALICK_SCRIPT_PATH, imagePath };
             ProcessBuilder pb = new ProcessBuilder(command);
             Process process = pb.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -26,11 +25,12 @@ public final class Haralick {
                 System.err.println(line);
             }
             process.waitFor();
+            if (process.exitValue() != 0)
+                throw new RuntimeException("Error while running Haralick (Python Layer)");
             return result;
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
-            return null;
+            throw new RuntimeException("Error while running Haralick");
         }
     }
 
