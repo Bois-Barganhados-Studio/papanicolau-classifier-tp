@@ -175,7 +175,7 @@ def main(image_path, models_path):
     # Process binary predictions
     print("Binary Classifier Results:\n")
     print("Multiclass Classifier Results:\n")
-    print("----------------------------------\n");
+    print("-----------------------------------------------\n");
     print("EfficientNet Torch:\n")
     print("EfficientNet Torch Binary Prediction:")
     print(f"{predEf} \n")

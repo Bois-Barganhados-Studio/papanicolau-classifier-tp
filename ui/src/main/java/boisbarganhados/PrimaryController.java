@@ -1121,7 +1121,7 @@ public class PrimaryController {
                             text1.getChildren().add(new Text("Binary Classifier Results:"));
                     }
                 }
-                text1.setMaxWidth(260);
+                text1.setMaxWidth(350);
                 borderPane.setCenter(text1);
                 showModal(borderPane, 400, 300);
             });
