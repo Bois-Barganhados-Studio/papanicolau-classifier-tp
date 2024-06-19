@@ -31,8 +31,8 @@ public class HSVHistogramController {
     hsvChart.setTitle("Histograma de tons de cor HSV");
 
     // Set axis labels
-    hsvChart.getXAxis().setLabel("H");
-    hsvChart.getYAxis().setLabel("V");
+    hsvChart.getXAxis().setLabel("HxV (Hbin x Vbin)");
+    hsvChart.getYAxis().setLabel("Frequência");
   }
 
 }
