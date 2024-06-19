@@ -30,6 +30,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ProgressIndicator;
@@ -63,6 +64,7 @@ import lombok.Data;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.Stack;
 import java.util.UUID;
@@ -333,10 +335,37 @@ public class PrimaryController {
     @FXML
     public void openRepo() {
         try {
-            java.awt.Desktop.getDesktop()
-                    .browse(new java.net.URI("https://github.com/Bois-Barganhados-Studio/pai-tp1-papanicolau"));
+            if (java.awt.Desktop.isDesktopSupported()) {
+                java.awt.Desktop desktop = java.awt.Desktop.getDesktop();
+                if (desktop.isSupported(java.awt.Desktop.Action.BROWSE)) {
+                    desktop.browse(new URI("https://github.com/Bois-Barganhados-Studio/pai-tp1-papanicolau"));
+                } else {
+                    throw new UnsupportedOperationException("Desktop API is not supported on the current platform");
+                }
+            } else {
+                throw new UnsupportedOperationException("Desktop API is not supported on the current platform");
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            var textFlow = new TextFlow(new Text("Erro ao abrir o link do repositório."));
+            var text = new Text("\n" + e.getMessage());
+            textFlow.getChildren().add(text);
+            var copyToClipboard = new Hyperlink(
+                    "Copiar link de acesso ao repositorio: (https://github.com/Bois-Barganhados-Studio/pai-tp1-papanicolau)");
+            copyToClipboard.setOnAction(event -> {
+                javafx.scene.input.Clipboard clipboard = javafx.scene.input.Clipboard.getSystemClipboard();
+                javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+                content.putString("https://github.com/Bois-Barganhados-Studio/pai-tp1-papanicolau");
+                clipboard.setContent(content);
+                showNotification("Copiado", "Link copiado para a área de transferência.", Styles.SUCCESS);
+            });
+            textFlow.minWidth(200);
+            textFlow.minHeight(200);
+            var vbox = new VBox(textFlow, copyToClipboard);
+            vbox.setMinWidth(200);
+            vbox.setMinHeight(200);
+            Card card = new Card();
+            card.setBody(vbox);
+            showModal(card);
         }
     }
 
@@ -645,7 +674,8 @@ public class PrimaryController {
             } else if (event.isControlDown() && event.getCode() == KeyCode.S) {
                 saveImage();
                 event.consume();
-            } else if (event.isControlDown() && (event.getCode() == KeyCode.PLUS  || KeyCode.EQUALS == event.getCode() || KeyCode.ADD == event.getCode())) {
+            } else if (event.isControlDown() && (event.getCode() == KeyCode.PLUS || KeyCode.EQUALS == event.getCode()
+                    || KeyCode.ADD == event.getCode())) {
                 zoomImage(1.1d);
                 event.consume();
             } else if (event.isControlDown() && event.getCode() == KeyCode.MINUS) {
