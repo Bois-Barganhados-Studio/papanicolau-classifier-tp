@@ -641,6 +641,15 @@ public class PrimaryController {
             } else if (event.isControlDown() && event.getCode() == KeyCode.Y) {
                 redo();
                 event.consume();
+            } else if (event.isControlDown() && event.getCode() == KeyCode.S) {
+                saveImage();
+                event.consume();
+            } else if (event.isControlDown() && event.getCode() == KeyCode.PLUS) {
+                zoomImage(1.1);
+                event.consume();
+            } else if (event.isControlDown() && event.getCode() == KeyCode.MINUS) {
+                zoomImage(0.9);
+                event.consume();
             }
         });
     }
