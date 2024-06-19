@@ -113,6 +113,8 @@ public class PrimaryController {
     @FXML
     private Button undoButton;
     @FXML
+    private Button resetCenterPosition;
+    @FXML
     private Button redoButton;
     @FXML
     private HBox contrastSliderWrapper;
@@ -229,6 +231,7 @@ public class PrimaryController {
         contextMenu.getItems().forEach(item -> item.setDisable(!enable));
     }
 
+    @FXML
     public void resetImageZoom() {
         imageView.setScaleX(1);
         imageView.setScaleY(1);
@@ -713,6 +716,7 @@ public class PrimaryController {
             hueSlider.setDisable(false);
             brightnessSlider.setDisable(false);
             sharpnessSlider.setDisable(false);
+            resetCenterPosition.setDisable(false);
         }
     }
 
@@ -1170,7 +1174,7 @@ public class PrimaryController {
                             text1.getChildren().add(new Text("Haralick para [1, 2 ,4, 8, 16, 32]" + "\n"));
                     }
                 }
-                text1.setMaxWidth(260);
+                text1.setMinWidth(320);
                 borderPane.setCenter(text1);
                 showModal(borderPane, 400, 200);
             });

@@ -217,6 +217,11 @@
                      <FontIcon iconLiteral="mdrmz-redo" iconSize="24" />
                   </graphic>
                </Button>
+               <Button fx:id="resetCenterPosition" onAction="#resetImageZoom" disable="true">
+                  <graphic>
+                     <FontIcon iconLiteral="mdoal-center_focus_strong" iconSize="24" />
+                  </graphic>
+               </Button>
                <Pane HBox.hgrow="ALWAYS" />
                <Button onAction="#minimizeWindow">
                   <graphic>
