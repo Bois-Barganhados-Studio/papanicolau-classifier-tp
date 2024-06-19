@@ -11,10 +11,13 @@ from skimage.feature import graycomatrix, graycoprops
 import joblib
 import time
 
-efficient_net_binary_path = 'efficientNet_cpu_bin.pth'
-efficient_net_multiclass_path = 'efficientNet_cpu_multiclass.pth'
+#Models paths
+efficient_net_binary_path = 'efficientNet_binary.pth'
+efficient_net_multiclass_path = 'efficientNet_multiclass.pth'
 svm_binary_path = 'binary_svm_classifier.pkl'
 svm_multi_path = 'multiclass_svm_classifier.pkl'
+
+# Class names
 binary_class_names = ['Negative', 'Positive']
 multiclass_class_names = ['ASC-H', 'ASC-US', 'HSIL', 'LSIL','SCC']
 
@@ -183,11 +186,6 @@ def main(image_path, models_path):
     print(f"{svmPred}\n")
     print("SVM Multiclass Prediction: ")
     print(f"{svmMultiPred}\n")
-            
-    # # Process multiclass predictions
-    # print("\nMulticlass Classifier Results:")
-    # for i, score in enumerate(predictions_multi[0]):
-    #     print(f"{multiclass_class_names[i]}: {score * 100:.2f}%")
 
 def test_many_images():
     # Test many images
