@@ -148,6 +148,7 @@ public class PrimaryController {
     private ProgressBar progressBar;
 
     public void zoomImage(double zoomFactor) {
+
         imageView.setScaleX(imageView.getScaleX() * zoomFactor);
         imageView.setScaleY(imageView.getScaleY() * zoomFactor);
 
@@ -600,17 +601,17 @@ public class PrimaryController {
                 return;
             }
             if (event.isControlDown()) {
-                double zoomFactor = event.getDeltaY() > 0 ? 1.1 : 0.9;
+                double zoomFactor = event.getDeltaY() > 0 ? 1.1d : 0.9d;
                 zoomImage(zoomFactor);
             }
         });
 
         contextMenu = new javafx.scene.control.ContextMenu();
         var zoomInMenuItem = new MenuItem("Zoom In");
-        zoomInMenuItem.setOnAction(event -> zoomImage(1.1));
+        zoomInMenuItem.setOnAction(event -> zoomImage(1.1d));
         zoomInMenuItem.setGraphic(new FontIcon("mdi2m-magnify-plus"));
         var zoomOutMenuItem = new MenuItem("Zoom Out");
-        zoomOutMenuItem.setOnAction(event -> zoomImage(0.9));
+        zoomOutMenuItem.setOnAction(event -> zoomImage(0.9d));
         zoomOutMenuItem.setGraphic(new FontIcon("mdi2m-magnify-minus"));
         var undoMenuItem = new MenuItem("Desfazer");
         undoMenuItem.setOnAction(event -> undo());
@@ -644,11 +645,11 @@ public class PrimaryController {
             } else if (event.isControlDown() && event.getCode() == KeyCode.S) {
                 saveImage();
                 event.consume();
-            } else if (event.isControlDown() && event.getCode() == KeyCode.PLUS) {
-                zoomImage(1.1);
+            } else if (event.isControlDown() && (event.getCode() == KeyCode.PLUS  || KeyCode.EQUALS == event.getCode() || KeyCode.ADD == event.getCode())) {
+                zoomImage(1.1d);
                 event.consume();
             } else if (event.isControlDown() && event.getCode() == KeyCode.MINUS) {
-                zoomImage(0.9);
+                zoomImage(0.9d);
                 event.consume();
             }
         });
@@ -1106,7 +1107,8 @@ public class PrimaryController {
                 borderPane.setMinWidth(300);
                 borderPane.setMaxWidth(300);
                 borderPane.setMaxHeight(300);
-                var header1 = new Tile("Resultado da classificação", "Resultado da classificação da imagem utilizando modelos pré treinados (SVM e EfficientNet).");
+                var header1 = new Tile("Resultado da classificação",
+                        "Resultado da classificação da imagem utilizando modelos pré treinados (SVM e EfficientNet).");
                 borderPane.setTop(header1);
                 var text1 = new TextFlow(new Text("\n\n" + "Resultados para Binário e Multiclass:\n"));
                 var printStart = false;
@@ -1133,7 +1135,7 @@ public class PrimaryController {
         }
     }
 
-    @FXML 
+    @FXML
     public void runHaralick() throws Exception {
         var image = imageView.getImage();
         if (image == null) {
@@ -1172,7 +1174,8 @@ public class PrimaryController {
                 borderPane.setMaxHeight(300);
                 var header1 = new Tile("Descritores de Haralick", "Resultado dos descritores de haralick da imagem.");
                 borderPane.setTop(header1);
-                var text1 = new TextFlow(new Text("\n\n" + "Descritores de haralick para matriz de coocorrência de níveis de cinza: \n\n"));
+                var text1 = new TextFlow(new Text(
+                        "\n\n" + "Descritores de haralick para matriz de coocorrência de níveis de cinza: \n\n"));
                 var printStart = false;
                 for (var r : result) {
                     if (printStart)
