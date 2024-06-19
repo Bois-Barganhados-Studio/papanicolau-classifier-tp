@@ -39,7 +39,7 @@ public class FourierChartController {
     task.onSucceededProperty().set(event -> {
       lineChart.getData().add(task.getValue());
 
-      lineChart.getXAxis().setLabel("Frequency");
+      lineChart.getXAxis().setLabel("Frequencia");
       lineChart.getYAxis().setLabel("Magnitude");
 
       // remove dots from line chart just keep the lines
@@ -53,7 +53,6 @@ public class FourierChartController {
 
   private XYChart.Series<Number, Number> updateChart() {
     lineChart.setTitle("Fourier Spectrum (Magnitude)");
-
     XYChart.Series<Number, Number> series = new XYChart.Series<>();
     series.setName("Magnitude Spectrum");
 
@@ -62,24 +61,29 @@ public class FourierChartController {
       int rows = spectrumMat.rows();
       int cols = spectrumMat.cols();
 
-      var data = new double[rows][cols];
+      // Convert Mat to 2D array
+      double[][] data = Utils.matTo2DArray(spectrumMat);
 
-      data = Utils.matTo2DArray(spectrumMat);
+      // Determine sampling step for rows and columns
+      int passRow = rows < 100 ? 1 : rows < 2000 ? rows / 100 : rows / 200;
+      int passCol = cols < 100 ? 1 : cols < 2000 ? cols / 100 : cols / 200;
 
-      var passRow = rows < 100 ? 1 : rows < 2000?  rows / 100 : rows / 200;
-      var passCol = cols < 100 ? 1 : cols < 2000?  cols / 100 : cols / 200;
-
+      // Add data points to the series with log transformation
       for (int i = 0; i < rows; i += passRow) {
         for (int j = 0; j < cols; j += passCol) {
-          series.getData().add(new XYChart.Data<>(i, data[i][j]));
+          double magnitude = data[i][j];
+          double logMagnitude = Math.log(magnitude + 1); // Log transform, adding 1 to avoid log(0)
+          series.getData().add(new XYChart.Data<>(i, logMagnitude));
         }
       }
 
     } catch (Exception e) {
+      // Log or print the stack trace for debugging purposes
       e.printStackTrace();
+      // Optionally, you could set the series name to indicate an error
+      series.setName("Error: Unable to process data");
     }
 
     return series;
-
   }
 }
