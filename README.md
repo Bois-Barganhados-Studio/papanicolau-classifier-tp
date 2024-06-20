@@ -1,5 +1,10 @@
 # PAI assigment - Papanicolau image viewer and classifier system
 
+
+Este estudo aborda o reconhecimento de células em exames de Papanicolau, uma tarefa crucial para o diagnóstico precoce do câncer cervical. Tradicionalmente, essa análise é realizada manualmente por patologistas, o que pode ser demorado e sujeito a erros humanos. Para melhorar a precisão e a eficiência, implementamos métodos automatizados utilizando dois classificadores principais: uma Máquina de Vetores de Suporte (SVM) como classificador raso e EfficientNet como classificador profundo. O SVM demonstrou eficácia ao lidar com dados de menor dimensionalidade e classes balanceadas, enquanto o EfficientNet se destacou em lidar com dados de imagem complexos e aprender caracterı́sticas de alto nı́vel diretamente dos dados. Os classificadores foram desenvolvidos utilizando técnicas abrangentes de pré-processamento e análise de imagem, sendo avaliados através de várias métricas para determinar sua eficácia. Nossos resultados indicam que o EfficientNet supera significativamente o SVM em termos de precisão, embora exija maiores recursos computacionais. 
+A implementação do aplicativo para reconhecimento de células em exames de Papanicolau foi dividida em duas partes principais: a interface gráfica do usuário (GUI), desenvol- vida em Java, e os classificadores de imagem, implementados em Python. A comunicação entre os modelos classificadores e interface é feita através de um sistema de camada de processamento com comandos feitos em Java executando partes de códigos escritos em Python, isso foi definido como camada de interface entre Java e Python.
+
+
 # AI Folder
 
 Folder with classification models, image processing scripts and train data.
