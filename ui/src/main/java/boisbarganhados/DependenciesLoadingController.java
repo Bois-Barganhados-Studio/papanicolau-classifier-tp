@@ -59,8 +59,8 @@ public class DependenciesLoadingController {
         taskMain.setOnFailed(e -> {
             var node = new BorderPane();
             var textFlow = new TextFlow();
-            node.setPrefWidth(400);
-            node.setPrefHeight(400);
+            node.setPrefWidth(300);
+            node.setPrefHeight(200);
             textFlow.getChildren()
                     .add(new Text("Failed to load dependencies. Please check the logs for more information. \nError: "
                             + e.getSource().getException().getMessage()));
@@ -70,10 +70,10 @@ public class DependenciesLoadingController {
             errorIcon.setIconColor(Color.RED);
             node.setLeft(errorIcon);
             Card card = new Card();
-            card.setPrefWidth(400);
-            card.setPrefHeight(300);
+            card.setPrefWidth(300);
+            card.setPrefHeight(200);
             card.setMaxWidth(450);
-            card.setMaxHeight(400);
+            card.setMaxHeight(200);
             card.getStyleClass().add(Styles.ELEVATED_2);
             card.setBody(node);
             Dialog<Void> dialog = new Dialog<Void>();
@@ -81,7 +81,7 @@ public class DependenciesLoadingController {
             dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
             dialog.setTitle("Dependencies install error");
             dialog.initOwner(stage);
-            dialog.initStyle(javafx.stage.StageStyle.UTILITY);
+            dialog.initStyle(javafx.stage.StageStyle.TRANSPARENT);
             dialog.setOnCloseRequest(ev -> {
                 System.exit(0);
             });
